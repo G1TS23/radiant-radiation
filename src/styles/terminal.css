@@ -134,26 +134,13 @@ body {
 }
 .cursor-box {
   border: 3px solid var(--cursor);
-  outline: 1px solid var(--bg); /* crisp edge against either cell tone */
-  box-shadow:
-    0 0 0 1px var(--cursor),
-    0 0 12px 2px color-mix(in srgb, var(--cursor) 60%, transparent);
-  animation: blink 1.1s steps(2, start) infinite;
+  /* bg-colored lines just outside and inside keep the frame crisp and visible
+     on any cell tone, without a glow or blink */
+  box-shadow: 0 0 0 1px var(--bg), inset 0 0 0 1px var(--bg);
 }
 .hint-box {
   border: 2px dashed var(--hint);
   z-index: 1;
-}
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
-  100% {
-    opacity: 1;
-  }
 }
 
 /* --- HUD --- */
@@ -217,7 +204,6 @@ body {
 }
 .cli.won .cursor-box,
 .cli.lost .cursor-box {
-  animation: none;
   opacity: 0;
 }
 .cli.lost .grid {
