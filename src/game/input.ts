@@ -24,6 +24,8 @@ export interface InputHandlers {
   resize(delta: number): void;
   /** S: skip the tutorial. */
   skip(): void;
+  /** T: toggle light / dark theme. */
+  toggleTheme(): void;
 }
 
 /** True when focus is in a text field, so game keys shouldn't fire. */
@@ -56,6 +58,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "N": h.newPuzzle(); break;
       case "s":
       case "S": h.skip(); break;
+      case "t":
+      case "T": h.toggleTheme(); break;
       case "d":
       case "D":
       case "]": h.resize(1); break; // cycle difficulty forward

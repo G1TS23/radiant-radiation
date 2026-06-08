@@ -18,6 +18,20 @@
     Consolas, monospace;
 }
 
+/* soft light theme — muted sage paper, no harsh black/white */
+:root.light {
+  --bg: #e9ece4;
+  --panel: #e1e5da;
+  --line: #c3ccbd;
+  --fg: #34423a;
+  --dim: #8a978b;
+  --accent: #2f9e63;
+  --hint: #b9821f;
+  --warn: #cf5a44;
+  --cell-off: #f6f7f2; /* soft white cell */
+  --cell-on: #3c483f; /* soft dark cell */
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,6 +42,7 @@ body {
   font-family: var(--mono);
   font-size: 15px;
   line-height: 1.5;
+  transition: background-color 0.18s ease, color 0.18s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,6 +101,7 @@ body {
   cursor: pointer;
   min-width: 0;
   min-height: 0;
+  transition: background-color 0.18s ease;
 }
 .cell.on {
   background: var(--cell-on);

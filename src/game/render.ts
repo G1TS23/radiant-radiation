@@ -60,6 +60,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <span>[r] reset</span>
       <span class="keys-free">[n] new</span>
       <span class="keys-free">[d] difficulty</span>
+      <span>[t] theme</span>
       <span class="keys-tut">[s] skip</span>
     </footer>`;
 }

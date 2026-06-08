@@ -24,6 +24,7 @@ import { attachInput, type InputHandlers } from "./input";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
 const DIFFICULTY_KEY = "rr.difficulty";
+const THEME_KEY = "rr.theme";
 
 type Mode = "tutorial" | "free";
 
@@ -67,6 +68,10 @@ function loadDifficulty(): number {
   const v = Number(readStorage(DIFFICULTY_KEY));
   return Number.isInteger(v) && v >= 0 && v < DIFFICULTIES.length ? v : DEFAULT_DIFFICULTY;
 }
+
+// --- theme -----------------------------------------------------------------
+// The initial theme class is applied inline in <head> (Layout.astro) to avoid a
+// flash; here we only handle runtime toggling.
 
 // --- session transitions ---------------------------------------------------
 
@@ -170,6 +175,10 @@ const handlers: InputHandlers = {
     if (session.mode !== "tutorial") return;
     writeStorage(TUTORIAL_DONE_KEY, "1");
     startFree(session.diff);
+  },
+  toggleTheme() {
+    const light = document.documentElement.classList.toggle("light");
+    writeStorage(THEME_KEY, light ? "light" : "dark");
   },
 };
 

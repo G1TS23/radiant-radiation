@@ -14,6 +14,18 @@ const { title = "radiant-radiation" } = Astro.props;
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<script is:inline>
+			// Apply the saved/system theme before first paint to avoid a flash.
+			(() => {
+				try {
+					const s = localStorage.getItem("rr.theme");
+					const light =
+						s === "light" ||
+						(s === null && matchMedia("(prefers-color-scheme: light)").matches);
+					if (light) document.documentElement.classList.add("light");
+				} catch {}
+			})();
+		</script>
 	</head>
 	<body>
 		<slot />
