@@ -20,6 +20,8 @@ export interface InputHandlers {
   regen(): void;
   /** N: generate a new puzzle (free play). */
   newPuzzle(): void;
+  /** Z: undo the last move. */
+  undo(): void;
   /** '[' or ']': change grid size by delta (free play only). */
   resize(delta: number): void;
   /** S: skip the tutorial. */
@@ -56,6 +58,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "R": h.regen(); break;
       case "n":
       case "N": h.newPuzzle(); break;
+      case "z":
+      case "Z": h.undo(); break;
       case "s":
       case "S": h.skip(); break;
       case "t":

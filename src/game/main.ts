@@ -32,6 +32,7 @@ interface Session {
   mode: Mode;
   state: GameState;
   initial: GameState; // pristine copy, for [r] reset
+  history: GameState[]; // snapshots before each move, for [z] undo
   stepIndex: number; // tutorial only
   diff: number; // difficulty index (free play)
 }
@@ -78,7 +79,7 @@ function loadDifficulty(): number {
 function startFree(diff: number): void {
   const d = DIFFICULTIES[diff];
   const state = newGameWithPar(d.N, d.par, d.margin);
-  session = { mode: "free", state, initial: snapshot(state), stepIndex: 0, diff };
+  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
 }
@@ -89,6 +90,7 @@ function startTutorial(index: number): void {
     mode: "tutorial",
     state,
     initial: snapshot(state),
+    history: [],
     stepIndex: index,
     diff: session?.diff ?? loadDifficulty(),
   };
@@ -136,6 +138,7 @@ const handlers: InputHandlers = {
       advance();
       return;
     }
+    session.history.push(snapshot(session.state));
     session.state = applyMoveAtCursor(session.state);
     draw();
   },
@@ -145,6 +148,7 @@ const handlers: InputHandlers = {
       return;
     }
     setCursor(clampVertex(session.state, x, y));
+    session.history.push(snapshot(session.state));
     session.state = applyMoveAtCursor(session.state);
     draw();
   },
@@ -158,6 +162,15 @@ const handlers: InputHandlers = {
   regen() {
     // Reset the current puzzle to its starting position (same board, moves 0).
     session.state = snapshot(session.initial);
+    session.history = [];
+    draw();
+  },
+  undo() {
+    // Undo the last move; disabled once solved (round is over — use space/r/n).
+    if (isWin(session.state)) return;
+    const prev = session.history.pop();
+    if (!prev) return;
+    session.state = prev;
     draw();
   },
   newPuzzle() {
