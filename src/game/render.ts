@@ -57,7 +57,7 @@ function ensureSkeleton(root: HTMLElement): void {
     <footer class="keys">
       <span>[arrows] move</span>
       <span>[space/enter] flip</span>
-      <span>[z] undo</span>
+      <span>[z] undo · right-click</span>
       <span>[r] reset</span>
       <span class="keys-free">[n] new</span>
       <span class="keys-free">[d] difficulty</span>

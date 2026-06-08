@@ -78,6 +78,12 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
     if (c) h.clickCell(c[0], c[1]);
   };
 
+  // Right-click anywhere on the board undoes the last move (no context menu).
+  const onContext = (e: MouseEvent): void => {
+    e.preventDefault();
+    h.undo();
+  };
+
   const onHover = (e: MouseEvent): void => {
     const c = cellCoords(e);
     if (c) h.hoverCell(c[0], c[1]);
@@ -85,11 +91,13 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
 
   window.addEventListener("keydown", onKey);
   root.addEventListener("click", onClick);
+  root.addEventListener("contextmenu", onContext);
   root.addEventListener("mousemove", onHover);
 
   return () => {
     window.removeEventListener("keydown", onKey);
     root.removeEventListener("click", onClick);
+    root.removeEventListener("contextmenu", onContext);
     root.removeEventListener("mousemove", onHover);
   };
 }
