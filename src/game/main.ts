@@ -15,12 +15,22 @@ import {
   moveCursor,
   isWin,
   isOver,
+  stars,
   type GameState,
   type Vertex,
 } from "./engine";
 import { TUTORIAL_STEPS, stepToState } from "./tutorial";
-import { render, type View } from "./render";
+import { render, renderHistory, type View } from "./render";
 import { attachInput, type InputHandlers } from "./input";
+import {
+  loadHistory,
+  addRecord,
+  clearHistory,
+  saveGame,
+  loadGame,
+  clearGame,
+  type GameRecord,
+} from "./history";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
 const DIFFICULTY_KEY = "rr.difficulty";
@@ -38,6 +48,8 @@ interface Session {
 }
 
 let root: HTMLElement;
+let historyPanel: HTMLElement | null;
+let historyEntries: GameRecord[] = [];
 let session: Session;
 
 /** Deep-ish copy of a state (the only mutable part is the cells array). */
@@ -112,6 +124,54 @@ function advance(): void {
   }
 }
 
+/** Resume an autosaved in-progress free-play game. */
+function restoreGame(saved: { state: GameState; initial: GameState; diff: number }): void {
+  session = {
+    mode: "free",
+    state: saved.state,
+    initial: saved.initial,
+    history: [],
+    stepIndex: 0,
+    diff: saved.diff,
+  };
+  draw();
+}
+
+/** Replay a finished game from its recorded initial board. */
+function replayRecord(rec: GameRecord): void {
+  const state: GameState = {
+    N: rec.N,
+    cells: rec.cells.slice(),
+    cursor: { i: 0, j: 0 },
+    moves: 0,
+    targetColor: null,
+    par: rec.par,
+    limit: rec.limit,
+  };
+  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff };
+  draw();
+}
+
+/** Record the just-finished free-play game into the history panel. */
+function recordCurrent(): void {
+  const s = session.state;
+  if (session.mode !== "free" || s.par === null || s.limit === null) return;
+  historyEntries = addRecord({
+    t: Date.now(),
+    diff: session.diff,
+    diffLabel: DIFFICULTIES[session.diff].label,
+    N: s.N,
+    result: isWin(s) ? "won" : "lost",
+    moves: s.moves,
+    par: s.par,
+    limit: s.limit,
+    stars: stars(s),
+    cells: session.initial.cells.slice(),
+  });
+  clearGame(); // the game is over; nothing in-progress to resume
+  drawHistory();
+}
+
 // --- input handlers --------------------------------------------------------
 
 /** Clamp a raw cell (x, y) to the nearest legal move vertex. */
@@ -140,6 +200,7 @@ const handlers: InputHandlers = {
     }
     session.history.push(snapshot(session.state));
     session.state = applyMoveAtCursor(session.state);
+    if (isOver(session.state)) recordCurrent();
     draw();
   },
   clickCell(x, y) {
@@ -150,6 +211,7 @@ const handlers: InputHandlers = {
     setCursor(clampVertex(session.state, x, y));
     session.history.push(snapshot(session.state));
     session.state = applyMoveAtCursor(session.state);
+    if (isOver(session.state)) recordCurrent();
     draw();
   },
   hoverCell(x, y) {
@@ -228,6 +290,14 @@ function computeView(): View {
 
 function draw(): void {
   render(root, session.state, computeView());
+  // Autosave only an in-progress free-play game (finished games go to history).
+  if (session.mode === "free" && !isOver(session.state)) {
+    saveGame({ state: session.state, initial: session.initial, diff: session.diff });
+  }
+}
+
+function drawHistory(): void {
+  if (historyPanel) renderHistory(historyPanel, historyEntries);
 }
 
 // --- boot ------------------------------------------------------------------
@@ -239,6 +309,21 @@ function boot(): void {
 
   attachInput(root, handlers);
 
+  // History panel: render saved games and wire replay / clear.
+  historyPanel = document.getElementById("history");
+  historyEntries = loadHistory();
+  drawHistory();
+  historyPanel?.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest(".hist-clear")) {
+      historyEntries = clearHistory();
+      drawHistory();
+      return;
+    }
+    const row = target.closest<HTMLElement>(".hist-row");
+    if (row?.dataset.index) replayRecord(historyEntries[Number(row.dataset.index)]);
+  });
+
   // Deep link: ?d=hard starts free play directly at that difficulty.
   const dParam = new URLSearchParams(location.search).get("d");
   if (dParam !== null) {
@@ -247,8 +332,15 @@ function boot(): void {
     return;
   }
 
-  if (tutorialDone()) startFree(loadDifficulty());
-  else startTutorial(0);
+  if (!tutorialDone()) {
+    startTutorial(0);
+    return;
+  }
+
+  // Resume an in-progress game if one was autosaved, else start fresh.
+  const saved = loadGame();
+  if (saved) restoreGame(saved);
+  else startFree(loadDifficulty());
 }
 
 if (document.readyState === "loading") {

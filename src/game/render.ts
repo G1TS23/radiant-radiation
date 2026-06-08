@@ -13,6 +13,7 @@
  */
 
 import { index, isWin, isLost, stars, type GameState, type Vertex } from "./engine";
+import type { GameRecord } from "./history";
 
 export interface View {
   /** Free play vs. tutorial — drives the title bar and HUD copy. */
@@ -145,4 +146,32 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
 
   // Message / instruction line.
   root.querySelector(".message")!.textContent = view.message ?? "";
+}
+
+/** Render the side history panel. Rows carry data-index for replay wiring. */
+export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
+  const head = `<div class="hist-head">history</div>`;
+
+  if (entries.length === 0) {
+    panel.innerHTML = head + `<p class="hist-empty">no games yet</p>`;
+    return;
+  }
+
+  const rows = entries
+    .map((e, i) => {
+      const icon = e.result === "won" ? "✓" : "✗";
+      const stars = e.result === "won" ? STARS(e.stars) : "";
+      return (
+        `<li class="hist-row ${e.result}" data-index="${i}" title="click to replay">` +
+        `<span class="hist-result">${icon}</span>` +
+        `<span class="hist-diff">${e.diffLabel}</span>` +
+        `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
+        `<span class="hist-stars">${stars}</span>` +
+        `</li>`
+      );
+    })
+    .join("");
+
+  panel.innerHTML =
+    head + `<ul class="hist-list">${rows}</ul>` + `<button class="hist-clear">clear history</button>`;
 }
