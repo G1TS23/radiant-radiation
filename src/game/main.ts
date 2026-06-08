@@ -160,9 +160,10 @@ const handlers: InputHandlers = {
     if (session.mode === "free") startFree(session.diff);
   },
   resize(delta) {
-    // In free play, '[' / ']' cycle difficulty presets.
+    // In free play, 'd' / '[' / ']' cycle difficulty presets (wrapping).
     if (session.mode !== "free") return;
-    const d = Math.min(DIFFICULTIES.length - 1, Math.max(0, session.diff + delta));
+    const len = DIFFICULTIES.length;
+    const d = (session.diff + delta + len) % len;
     if (d !== session.diff) startFree(d);
   },
   skip() {

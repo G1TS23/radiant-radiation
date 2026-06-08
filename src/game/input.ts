@@ -56,8 +56,10 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "N": h.newPuzzle(); break;
       case "s":
       case "S": h.skip(); break;
-      case "[": h.resize(-1); break;
-      case "]": h.resize(1); break;
+      case "d":
+      case "D":
+      case "]": h.resize(1); break; // cycle difficulty forward
+      case "[": h.resize(-1); break; // cycle difficulty backward
       default: return; // don't preventDefault for keys we ignore
     }
     e.preventDefault();
