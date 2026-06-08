@@ -16,8 +16,10 @@ export interface InputHandlers {
   clickCell(x: number, y: number): void;
   /** Hover a cell at (x, y) — used to preview the cursor. */
   hoverCell(x: number, y: number): void;
-  /** R: regenerate (new puzzle / reset tutorial step). */
+  /** R: reset the current puzzle to its starting position. */
   regen(): void;
+  /** N: generate a new puzzle (free play). */
+  newPuzzle(): void;
   /** '[' or ']': change grid size by delta (free play only). */
   resize(delta: number): void;
   /** S: skip the tutorial. */
@@ -50,6 +52,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "Enter": h.commit(); break;
       case "r":
       case "R": h.regen(); break;
+      case "n":
+      case "N": h.newPuzzle(); break;
       case "s":
       case "S": h.skip(); break;
       case "[": h.resize(-1); break;

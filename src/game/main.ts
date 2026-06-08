@@ -155,6 +155,10 @@ const handlers: InputHandlers = {
     session.state = snapshot(session.initial);
     draw();
   },
+  newPuzzle() {
+    // New random board (free play only; tutorial boards are fixed).
+    if (session.mode === "free") startFree(session.diff);
+  },
   resize(delta) {
     // In free play, '[' / ']' cycle difficulty presets.
     if (session.mode !== "free") return;
