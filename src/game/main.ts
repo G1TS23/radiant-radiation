@@ -2,17 +2,19 @@
  * main.ts — orchestration. Wires engine + tutorial + render + input together.
  *
  * Flow: boot -> tutorial (unless already done) -> free play.
- * Holds the single source of truth (the current session) and re-renders after
- * every change. Keeps no DOM logic of its own beyond reading the mount point.
+ * Free play is driven by difficulty presets (size + par + slack). The board is
+ * generated with a known par, so we can enforce a move limit and score stars.
+ * Tutorial boards stay unlimited (par/limit = null).
  */
 
 import {
-  MIN_N,
-  MAX_N,
-  newGame,
+  DIFFICULTIES,
+  DEFAULT_DIFFICULTY,
+  newGameWithPar,
   applyMoveAtCursor,
   moveCursor,
   isWin,
+  isOver,
   type GameState,
   type Vertex,
 } from "./engine";
@@ -21,7 +23,7 @@ import { render, type View } from "./render";
 import { attachInput, type InputHandlers } from "./input";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
-const DEFAULT_N = 5;
+const DIFFICULTY_KEY = "rr.difficulty";
 
 type Mode = "tutorial" | "free";
 
@@ -29,7 +31,7 @@ interface Session {
   mode: Mode;
   state: GameState;
   stepIndex: number; // tutorial only
-  freeN: number; // remembered grid size for free play
+  diff: number; // difficulty index (free play)
 }
 
 let root: HTMLElement;
@@ -37,26 +39,40 @@ let session: Session;
 
 // --- persistence -----------------------------------------------------------
 
-function tutorialDone(): boolean {
+function readStorage(key: string): string | null {
   try {
-    return localStorage.getItem(TUTORIAL_DONE_KEY) === "1";
+    return localStorage.getItem(key);
   } catch {
-    return false;
+    return null;
   }
 }
 
-function markTutorialDone(): void {
+function writeStorage(key: string, value: string): void {
   try {
-    localStorage.setItem(TUTORIAL_DONE_KEY, "1");
+    localStorage.setItem(key, value);
   } catch {
     /* ignore (private mode / disabled storage) */
   }
 }
 
+const tutorialDone = (): boolean => readStorage(TUTORIAL_DONE_KEY) === "1";
+
+function loadDifficulty(): number {
+  const v = Number(readStorage(DIFFICULTY_KEY));
+  return Number.isInteger(v) && v >= 0 && v < DIFFICULTIES.length ? v : DEFAULT_DIFFICULTY;
+}
+
 // --- session transitions ---------------------------------------------------
 
-function startFree(N: number): void {
-  session = { mode: "free", state: newGame(N), stepIndex: 0, freeN: N };
+function startFree(diff: number): void {
+  const d = DIFFICULTIES[diff];
+  session = {
+    mode: "free",
+    state: newGameWithPar(d.N, d.par, d.margin),
+    stepIndex: 0,
+    diff,
+  };
+  writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
 }
 
@@ -65,23 +81,23 @@ function startTutorial(index: number): void {
     mode: "tutorial",
     state: stepToState(TUTORIAL_STEPS[index]),
     stepIndex: index,
-    freeN: session?.freeN ?? DEFAULT_N,
+    diff: session?.diff ?? loadDifficulty(),
   };
   draw();
 }
 
-/** Move on once the current board is solved (or skipped). */
+/** Move on once the round is finished (won, lost, or skipped). */
 function advance(): void {
   if (session.mode === "tutorial") {
     const next = session.stepIndex + 1;
     if (next < TUTORIAL_STEPS.length) {
       startTutorial(next);
     } else {
-      markTutorialDone();
-      startFree(session.freeN);
+      writeStorage(TUTORIAL_DONE_KEY, "1");
+      startFree(session.diff);
     }
   } else {
-    startFree(session.freeN); // fresh puzzle, same size
+    startFree(session.diff); // fresh puzzle, same difficulty
   }
 }
 
@@ -102,11 +118,12 @@ function setCursor(v: Vertex): void {
 
 const handlers: InputHandlers = {
   move(di, dj) {
+    if (isOver(session.state)) return;
     session.state = moveCursor(session.state, di, dj);
     draw();
   },
   commit() {
-    if (isWin(session.state)) {
+    if (isOver(session.state)) {
       advance();
       return;
     }
@@ -114,7 +131,7 @@ const handlers: InputHandlers = {
     draw();
   },
   clickCell(x, y) {
-    if (isWin(session.state)) {
+    if (isOver(session.state)) {
       advance();
       return;
     }
@@ -123,6 +140,7 @@ const handlers: InputHandlers = {
     draw();
   },
   hoverCell(x, y) {
+    if (isOver(session.state)) return;
     const v = clampVertex(session.state, x, y);
     if (v.i === session.state.cursor.i && v.j === session.state.cursor.j) return;
     setCursor(v);
@@ -130,17 +148,18 @@ const handlers: InputHandlers = {
   },
   regen() {
     if (session.mode === "tutorial") startTutorial(session.stepIndex);
-    else startFree(session.freeN);
+    else startFree(session.diff);
   },
   resize(delta) {
+    // In free play, '[' / ']' cycle difficulty presets.
     if (session.mode !== "free") return;
-    const N = Math.min(MAX_N, Math.max(MIN_N, session.freeN + delta));
-    if (N !== session.freeN) startFree(N);
+    const d = Math.min(DIFFICULTIES.length - 1, Math.max(0, session.diff + delta));
+    if (d !== session.diff) startFree(d);
   },
   skip() {
     if (session.mode !== "tutorial") return;
-    markTutorialDone();
-    startFree(session.freeN);
+    writeStorage(TUTORIAL_DONE_KEY, "1");
+    startFree(session.diff);
   },
 };
 
@@ -148,24 +167,29 @@ const handlers: InputHandlers = {
 
 function computeView(): View {
   const s = session.state;
-  const won = isWin(s);
 
   if (session.mode === "tutorial") {
     const step = TUTORIAL_STEPS[session.stepIndex];
     const isLast = session.stepIndex === TUTORIAL_STEPS.length - 1;
+    const won = isWin(s);
     const cont = isLast ? "press [space] to start playing" : "press [space] to continue";
     return {
       mode: "tutorial",
+      difficulty: null,
       step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
       message: won ? `${step.successText} — ${cont}` : step.instruction,
-      // Hint only guides the first move, then steps aside.
       hint: !won && s.moves === 0 ? step.hint ?? null : null,
     };
   }
 
+  let message = "";
+  if (isWin(s)) message = "press [space] or [r] for the next puzzle";
+  else if (isOver(s)) message = "out of moves — press [r] to retry";
+
   return {
     mode: "free",
-    message: won ? "press [space] or [r] for a new puzzle" : "",
+    difficulty: DIFFICULTIES[session.diff].label,
+    message,
     hint: null,
   };
 }
@@ -183,15 +207,15 @@ function boot(): void {
 
   attachInput(root, handlers);
 
-  // Deep link: ?n=5 starts free play directly at that size (skips tutorial).
-  const param = new URLSearchParams(location.search).get("n");
-  if (param !== null) {
-    const n = Math.min(MAX_N, Math.max(MIN_N, Number(param) || DEFAULT_N));
-    startFree(n);
+  // Deep link: ?d=hard starts free play directly at that difficulty.
+  const dParam = new URLSearchParams(location.search).get("d");
+  if (dParam !== null) {
+    const idx = DIFFICULTIES.findIndex((x) => x.id === dParam);
+    startFree(idx >= 0 ? idx : DEFAULT_DIFFICULTY);
     return;
   }
 
-  if (tutorialDone()) startFree(DEFAULT_N);
+  if (tutorialDone()) startFree(loadDifficulty());
   else startTutorial(0);
 }
 

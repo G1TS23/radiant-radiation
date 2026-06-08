@@ -12,11 +12,13 @@
  * so clicks fall through to the cells (mouse wiring lives in input.ts).
  */
 
-import { index, isWin, type GameState, type Vertex } from "./engine";
+import { index, isWin, isLost, stars, type GameState, type Vertex } from "./engine";
 
 export interface View {
   /** Free play vs. tutorial — drives the title bar and HUD copy. */
   mode: "free" | "tutorial";
+  /** Difficulty label for the title bar (free play); null in tutorial. */
+  difficulty?: string | null;
   /** Instruction / status line (tutorial prompt, or a free-play hint). */
   message?: string;
   /** Recommended move to highlight, if any. */
@@ -27,6 +29,7 @@ export interface View {
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
 const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
+const STARS = (n: number): string => "★".repeat(n) + "☆".repeat(3 - n);
 
 /** Build the static skeleton once; subsequent calls reuse it. */
 function ensureSkeleton(root: HTMLElement): void {
@@ -46,6 +49,7 @@ function ensureSkeleton(root: HTMLElement): void {
     </div>
     <div class="hud">
       <span class="hud-moves">moves: 000</span>
+      <span class="hud-par"></span>
       <span class="hud-goal"></span>
       <span class="hud-status"></span>
     </div>
@@ -54,7 +58,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <span>[arrows] move</span>
       <span>[space/enter] flip</span>
       <span>[r] regen</span>
-      <span class="keys-free">[ / ] size</span>
+      <span class="keys-free">[ / ] difficulty</span>
       <span class="keys-tut">[s] skip</span>
     </footer>`;
 }
@@ -109,20 +113,31 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   placeOverlay(overlay.querySelector<HTMLElement>(".cursor-box"), state.cursor);
   placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), view.hint ?? null);
 
-  // Title bar meta: size or tutorial progress.
+  // Title bar meta: difficulty + size, or tutorial progress.
   const meta = view.mode === "tutorial" && view.step
     ? `tutorial ${view.step.current}/${view.step.total}`
-    : `N=${state.N}`;
+    : view.difficulty
+      ? `${view.difficulty} · N=${state.N}`
+      : `N=${state.N}`;
   root.querySelector(".bar-meta")!.textContent = meta;
 
-  // HUD.
-  root.querySelector(".hud-moves")!.textContent = `moves: ${PAD(state.moves)}`;
+  // HUD: moves (with limit), par, goal.
+  root.querySelector(".hud-moves")!.textContent =
+    `moves: ${PAD(state.moves)}` + (state.limit !== null ? ` / ${PAD(state.limit)}` : "");
+  root.querySelector(".hud-par")!.textContent =
+    state.par !== null ? `par: ${PAD(state.par)}` : "";
   root.querySelector(".hud-goal")!.textContent =
     state.targetColor === null ? "goal: single color" : `goal: all ${COLOR_NAME(state.targetColor)}`;
 
+  // Status: win (+ stars when scored) or out of moves.
   const won = isWin(state);
-  root.querySelector(".hud-status")!.textContent = won ? ">> solved" : "";
+  const lost = isLost(state);
+  const status = won
+    ? state.par !== null ? `>> solved  ${STARS(stars(state))}` : ">> solved"
+    : lost ? ">> out of moves" : "";
+  root.querySelector(".hud-status")!.textContent = status;
   root.classList.toggle("won", won);
+  root.classList.toggle("lost", lost);
   root.classList.toggle("tutorial", view.mode === "tutorial");
 
   // Message / instruction line.

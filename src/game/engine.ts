@@ -29,6 +29,10 @@ export interface GameState {
    * true  -> must be all black; false -> all white (tutorial goals).
    */
   targetColor: boolean | null;
+  /** Intended solution length (generation subset size); null = untracked (tutorial). */
+  par: number | null;
+  /** Max moves allowed before it's a loss; null = unlimited. */
+  limit: number | null;
 }
 
 /** Grid-size bounds for free play (2x2 has no real puzzle, so min is 3). */
@@ -97,8 +101,96 @@ export function newGame(N: number, rng: RNG = Math.random): GameState {
     cursor: { i: 0, j: 0 },
     moves: 0,
     targetColor: null,
+    par: null,
+    limit: null,
   };
 }
+
+/** All legal move vertices of an NxN board. */
+export function allVertices(N: number): Vertex[] {
+  const span = vertexSpan(N);
+  const out: Vertex[] = [];
+  for (let j = 0; j < span; j++) {
+    for (let i = 0; i < span; i++) out.push({ i, j });
+  }
+  return out;
+}
+
+function shuffle<T>(arr: T[], rng: RNG): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+/**
+ * Generate a puzzle with a KNOWN par. Instead of scrambling (where moves cancel
+ * and the real solution length is unknowable), we apply `par` DISTINCT moves
+ * once each — so the canonical solution is exactly those `par` moves, and the
+ * board is always solvable in at most `par` moves. The move limit is par+margin.
+ */
+export function newGameWithPar(
+  N: number,
+  par: number,
+  margin: number,
+  rng: RNG = Math.random,
+): GameState {
+  const verts = allVertices(N);
+  const k = Math.max(1, Math.min(par, verts.length));
+  let cells = createBoard(N, false);
+  for (let attempt = 0; attempt < 24; attempt++) {
+    cells = createBoard(N, false);
+    shuffle(verts, rng);
+    for (let n = 0; n < k; n++) flip2x2(cells, N, verts[n].i, verts[n].j);
+    if (!isMonochrome(cells)) break; // retry if the subset cancelled out
+  }
+  return {
+    N,
+    cells,
+    cursor: { i: 0, j: 0 },
+    moves: 0,
+    targetColor: null,
+    par: k,
+    limit: k + margin,
+  };
+}
+
+/** True when the move limit is reached without a win. */
+export function isLost(state: GameState): boolean {
+  return state.limit !== null && !isWin(state) && state.moves >= state.limit;
+}
+
+/** Win or loss — the round is finished either way. */
+export function isOver(state: GameState): boolean {
+  return isWin(state) || isLost(state);
+}
+
+/** Star rating on a win: 3 at/under par, 2 up to the midpoint, else 1. */
+export function stars(state: GameState): 0 | 1 | 2 | 3 {
+  if (!isWin(state) || state.par === null) return 0;
+  if (state.moves <= state.par) return 3;
+  if (state.limit === null) return 3;
+  const mid = state.par + Math.floor((state.limit - state.par) / 2);
+  return state.moves <= mid ? 2 : 1;
+}
+
+export interface Difficulty {
+  id: string;
+  label: string;
+  N: number;
+  par: number;
+  margin: number;
+}
+
+/** Presets bundle grid size, par and slack into one difficulty knob. */
+export const DIFFICULTIES: Difficulty[] = [
+  { id: "easy", label: "easy", N: 4, par: 6, margin: 4 },
+  { id: "normal", label: "normal", N: 5, par: 10, margin: 3 },
+  { id: "hard", label: "hard", N: 6, par: 16, margin: 2 },
+  { id: "expert", label: "expert", N: 7, par: 24, margin: 1 },
+];
+
+export const DEFAULT_DIFFICULTY = 1; // "normal"
 
 /** True when the current board satisfies the win condition. */
 export function isWin(state: GameState): boolean {

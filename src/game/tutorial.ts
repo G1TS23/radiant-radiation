@@ -65,5 +65,7 @@ export function stepToState(step: TutorialStep): GameState {
     cursor: { i: 0, j: 0 },
     moves: 0,
     targetColor: step.targetColor,
+    par: null,
+    limit: null,
   };
 }

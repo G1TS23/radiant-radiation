@@ -10,6 +10,7 @@
   --dim: #5f7166;
   --accent: #57f08a; /* cursor */
   --hint: #ffd166; /* recommended move */
+  --warn: #ff6b6b; /* out of moves */
   --cell-off: #e8ece8; /* "white" cell */
   --cell-on: #11150f; /* "black" cell */
 
@@ -182,11 +183,18 @@ body {
   display: none;
 }
 
-/* --- won state --- */
+/* --- end states --- */
 .cli.won .grid {
   border-color: var(--accent);
 }
-.cli.won .cursor-box {
+.cli.won .cursor-box,
+.cli.lost .cursor-box {
   animation: none;
   opacity: 0;
+}
+.cli.lost .grid {
+  border-color: var(--warn);
+}
+.cli.lost .hud-status {
+  color: var(--warn);
 }
