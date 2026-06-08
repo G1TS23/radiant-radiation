@@ -2,11 +2,14 @@
  * render.ts — turn a GameState into DOM. No input handling, no game logic.
  *
  * Rendering is idempotent: call `render(root, state, view)` after every change.
- * The skeleton (title bar, grid, HUD, key hints) is built once and then patched.
- * Cells are plain divs auto-placed into a CSS grid; the cursor and hint are two
- * overlay boxes placed explicitly on the same grid tracks so they frame the 2x2
- * block cleanly. Overlays are `pointer-events: none` so clicks fall through to
- * the cells underneath (mouse wiring lives in input.ts via event delegation).
+ * The skeleton (title bar, board, HUD, key hints) is built once and then patched.
+ *
+ * Layout: cells live in `.grid` (auto-placed). The cursor/hint frames live in a
+ * separate, absolutely-positioned `.overlay` that mirrors the grid's template
+ * and gap. Keeping the frames OUT of the cell grid is essential — an explicitly
+ * placed grid item is positioned before auto-placed ones, which would otherwise
+ * push the cells out of the block it covers. The overlay is `pointer-events:none`
+ * so clicks fall through to the cells (mouse wiring lives in input.ts).
  */
 
 import { index, isWin, type GameState, type Vertex } from "./engine";
@@ -27,14 +30,20 @@ const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
 
 /** Build the static skeleton once; subsequent calls reuse it. */
 function ensureSkeleton(root: HTMLElement): void {
-  if (root.querySelector(".grid")) return;
+  if (root.querySelector(".board")) return;
   root.classList.add("cli");
   root.innerHTML = `
     <header class="bar">
       <span class="bar-title">radiant-radiation</span>
       <span class="bar-meta"></span>
     </header>
-    <div class="grid" role="grid" aria-label="puzzle grid"></div>
+    <div class="board">
+      <div class="grid" role="grid" aria-label="puzzle grid"></div>
+      <div class="overlay" aria-hidden="true">
+        <div class="cursor-box"></div>
+        <div class="hint-box"></div>
+      </div>
+    </div>
     <div class="hud">
       <span class="hud-moves">moves: 000</span>
       <span class="hud-goal"></span>
@@ -50,12 +59,12 @@ function ensureSkeleton(root: HTMLElement): void {
     </footer>`;
 }
 
-/** Rebuild the cell nodes + overlays when the grid size changes. */
-function buildGrid(grid: HTMLElement, state: GameState): void {
-  grid.style.setProperty("--n", String(state.N));
+/** Rebuild the cell nodes when the grid size changes. */
+function buildCells(board: HTMLElement, grid: HTMLElement, N: number): void {
+  board.style.setProperty("--n", String(N));
   const frag = document.createDocumentFragment();
-  for (let y = 0; y < state.N; y++) {
-    for (let x = 0; x < state.N; x++) {
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
       const cell = document.createElement("div");
       cell.className = "cell";
       cell.dataset.x = String(x);
@@ -63,13 +72,6 @@ function buildGrid(grid: HTMLElement, state: GameState): void {
       frag.appendChild(cell);
     }
   }
-  // Overlays come last so cells auto-place first, then frames sit on top.
-  const cursor = document.createElement("div");
-  cursor.className = "cursor-box";
-  const hint = document.createElement("div");
-  hint.className = "hint-box";
-  frag.append(cursor, hint);
-
   grid.replaceChildren(frag);
 }
 
@@ -89,21 +91,23 @@ function placeOverlay(box: HTMLElement | null, v: Vertex | null | undefined): vo
 export function render(root: HTMLElement, state: GameState, view: View): void {
   ensureSkeleton(root);
 
+  const board = root.querySelector<HTMLElement>(".board")!;
   const grid = root.querySelector<HTMLElement>(".grid")!;
-  const cellCount = grid.querySelectorAll(".cell").length;
-  if (cellCount !== state.N * state.N) buildGrid(grid, state);
+  const overlay = root.querySelector<HTMLElement>(".overlay")!;
+
+  if (grid.children.length !== state.N * state.N) buildCells(board, grid, state.N);
 
   // Cell colors.
   for (let y = 0; y < state.N; y++) {
     for (let x = 0; x < state.N; x++) {
-      const cell = grid.children[index(state.N, x, y)] as HTMLElement;
-      cell.classList.toggle("on", state.cells[index(state.N, x, y)]);
+      const i = index(state.N, x, y);
+      (grid.children[i] as HTMLElement).classList.toggle("on", state.cells[i]);
     }
   }
 
-  // Cursor + hint frames.
-  placeOverlay(grid.querySelector<HTMLElement>(".cursor-box"), state.cursor);
-  placeOverlay(grid.querySelector<HTMLElement>(".hint-box"), view.hint ?? null);
+  // Cursor + hint frames (in the overlay layer).
+  placeOverlay(overlay.querySelector<HTMLElement>(".cursor-box"), state.cursor);
+  placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), view.hint ?? null);
 
   // Title bar meta: size or tutorial progress.
   const meta = view.mode === "tutorial" && view.step

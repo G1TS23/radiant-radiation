@@ -183,6 +183,14 @@ function boot(): void {
 
   attachInput(root, handlers);
 
+  // Deep link: ?n=5 starts free play directly at that size (skips tutorial).
+  const param = new URLSearchParams(location.search).get("n");
+  if (param !== null) {
+    const n = Math.min(MAX_N, Math.max(MIN_N, Number(param) || DEFAULT_N));
+    startFree(n);
+    return;
+  }
+
   if (tutorialDone()) startFree(DEFAULT_N);
   else startTutorial(0);
 }

@@ -62,32 +62,47 @@ body {
   font-size: 0.85em;
 }
 
-/* --- grid --- */
+/* --- board + grid --- */
+.board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
 .grid {
   display: grid;
   grid-template-columns: repeat(var(--n, 5), 1fr);
+  grid-template-rows: repeat(var(--n, 5), 1fr);
   gap: 3px;
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
   background: var(--line);
   border: 3px solid var(--line);
   user-select: none;
   touch-action: manipulation;
 }
 .cell {
-  aspect-ratio: 1;
   background: var(--cell-off);
   cursor: pointer;
+  min-width: 0;
+  min-height: 0;
 }
 .cell.on {
   background: var(--cell-on);
 }
 
-/* cursor + hint overlays (placed on the same grid tracks, span 2x2) */
+/* overlay layer: its own grid mirroring the cells, sitting on top.
+   Kept separate so the cursor/hint frames never displace cells. */
+.overlay {
+  position: absolute;
+  inset: 3px; /* align inside the grid's 3px border */
+  display: grid;
+  grid-template-columns: repeat(var(--n, 5), 1fr);
+  grid-template-rows: repeat(var(--n, 5), 1fr);
+  gap: 3px;
+  pointer-events: none;
+}
 .cursor-box,
 .hint-box {
-  pointer-events: none;
-  z-index: 2;
   align-self: stretch;
   justify-self: stretch;
 }
