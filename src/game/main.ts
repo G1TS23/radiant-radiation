@@ -30,12 +30,18 @@ type Mode = "tutorial" | "free";
 interface Session {
   mode: Mode;
   state: GameState;
+  initial: GameState; // pristine copy, for [r] reset
   stepIndex: number; // tutorial only
   diff: number; // difficulty index (free play)
 }
 
 let root: HTMLElement;
 let session: Session;
+
+/** Deep-ish copy of a state (the only mutable part is the cells array). */
+function snapshot(s: GameState): GameState {
+  return { ...s, cells: s.cells.slice(), cursor: { ...s.cursor } };
+}
 
 // --- persistence -----------------------------------------------------------
 
@@ -66,20 +72,18 @@ function loadDifficulty(): number {
 
 function startFree(diff: number): void {
   const d = DIFFICULTIES[diff];
-  session = {
-    mode: "free",
-    state: newGameWithPar(d.N, d.par, d.margin),
-    stepIndex: 0,
-    diff,
-  };
+  const state = newGameWithPar(d.N, d.par, d.margin);
+  session = { mode: "free", state, initial: snapshot(state), stepIndex: 0, diff };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
 }
 
 function startTutorial(index: number): void {
+  const state = stepToState(TUTORIAL_STEPS[index]);
   session = {
     mode: "tutorial",
-    state: stepToState(TUTORIAL_STEPS[index]),
+    state,
+    initial: snapshot(state),
     stepIndex: index,
     diff: session?.diff ?? loadDifficulty(),
   };
@@ -147,8 +151,9 @@ const handlers: InputHandlers = {
     draw();
   },
   regen() {
-    if (session.mode === "tutorial") startTutorial(session.stepIndex);
-    else startFree(session.diff);
+    // Reset the current puzzle to its starting position (same board, moves 0).
+    session.state = snapshot(session.initial);
+    draw();
   },
   resize(delta) {
     // In free play, '[' / ']' cycle difficulty presets.
@@ -183,8 +188,8 @@ function computeView(): View {
   }
 
   let message = "";
-  if (isWin(s)) message = "press [space] or [r] for the next puzzle";
-  else if (isOver(s)) message = "out of moves — press [r] to retry";
+  if (isWin(s)) message = "solved — [space] next puzzle · [r] replay";
+  else if (isOver(s)) message = "out of moves — [r] retry · [space] new puzzle";
 
   return {
     mode: "free",
