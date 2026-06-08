@@ -228,13 +228,24 @@ body {
 }
 
 /* --- history panel --- */
+/* Hidden until the first finished game; the left spacer mirrors the panel
+   width so the board stays centered on the page when the panel is shown. */
+.hist-spacer,
 .history {
+  display: none;
   width: 230px;
   flex: 0 0 auto;
+}
+.layout.has-history .hist-spacer,
+.layout.has-history .history {
+  display: block;
+}
+.history {
   font-size: 0.85em;
   color: var(--fg);
 }
 .hist-head {
+  font-size: 15px; /* match the title bar so the underline aligns */
   color: var(--accent);
   letter-spacing: 0.04em;
   border-bottom: 1px solid var(--line);
@@ -309,7 +320,10 @@ body {
     flex-direction: column;
     align-items: center;
   }
-  .history {
+  .hist-spacer {
+    display: none !important; /* no centering spacer when stacked */
+  }
+  .layout.has-history .history {
     width: min(92vw, 560px);
   }
 }

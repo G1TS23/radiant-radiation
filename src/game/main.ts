@@ -297,7 +297,10 @@ function draw(): void {
 }
 
 function drawHistory(): void {
-  if (historyPanel) renderHistory(historyPanel, historyEntries);
+  if (!historyPanel) return;
+  renderHistory(historyPanel, historyEntries);
+  // Reveal the panel (and its balancing spacer) only once a game has finished.
+  historyPanel.parentElement?.classList.toggle("has-history", historyEntries.length > 0);
 }
 
 // --- boot ------------------------------------------------------------------
