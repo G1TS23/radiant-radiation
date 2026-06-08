@@ -8,7 +8,8 @@
   --line: #243029; /* grid gaps / borders */
   --fg: #d2e6d6;
   --dim: #5f7166;
-  --accent: #57f08a; /* cursor */
+  --accent: #57f08a; /* solved text / borders */
+  --cursor: #6dff9e; /* cursor frame (bright on dark) */
   --hint: #ffd166; /* recommended move */
   --warn: #ff6b6b; /* out of moves */
   --cell-off: #e8ece8; /* "white" cell */
@@ -26,6 +27,7 @@
   --fg: #34423a;
   --dim: #8a978b;
   --accent: #2f9e63;
+  --cursor: #0aa84f; /* vivid green, reads on both soft cell tones */
   --hint: #b9821f;
   --warn: #cf5a44;
   --cell-off: #f6f7f2; /* soft white cell */
@@ -124,8 +126,11 @@ body {
   justify-self: stretch;
 }
 .cursor-box {
-  border: 2px solid var(--accent);
-  outline: 1px solid var(--bg);
+  border: 3px solid var(--cursor);
+  outline: 1px solid var(--bg); /* crisp edge against either cell tone */
+  box-shadow:
+    0 0 0 1px var(--cursor),
+    0 0 12px 2px color-mix(in srgb, var(--cursor) 60%, transparent);
   animation: blink 1.1s steps(2, start) infinite;
 }
 .hint-box {
