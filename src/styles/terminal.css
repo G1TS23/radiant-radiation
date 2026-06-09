@@ -262,9 +262,12 @@ body {
 .message-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 14px;
-  min-height: 1.6em;
+  /* reserve the CTA's height at all times so the button appearing on win/loss
+     doesn't shift the layout below it */
+  min-height: 44px;
 }
 .message {
   margin: 0;
@@ -276,6 +279,9 @@ body {
 }
 .message:empty::before {
   content: "";
+}
+.message:empty {
+  display: none; /* don't let an empty message offset the centered CTA */
 }
 .cta {
   display: none;
