@@ -304,20 +304,19 @@ function computeView(): View {
     };
   }
 
-  let message = "";
+  // The status (">> solved" / ">> out of moves") already shows in the HUD, so the
+  // message line stays empty here — only the action button appears next to it.
   let cta: View["cta"] = null;
   if (won) {
-    message = "solved!";
     cta = { label: "next puzzle ▶", action: "next" };
   } else if (isOver(s)) {
-    message = "out of moves";
     cta = { label: "retry ▶", action: "reset" };
   }
 
   return {
     mode: "free",
     difficulty: DIFFICULTIES[session.diff].label,
-    message,
+    message: "",
     hint: null,
     flash,
     cta,
