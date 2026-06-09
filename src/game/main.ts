@@ -29,6 +29,7 @@ import {
   loadGame,
   clearGame,
   type GameRecord,
+  type SavedGame,
 } from "./history";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
@@ -44,6 +45,7 @@ interface Session {
   history: GameState[]; // snapshots before each move, for [z] undo
   stepIndex: number; // tutorial only
   diff: number; // difficulty index (free play)
+  replay: boolean; // a replayed puzzle (practice) — not re-recorded on finish
 }
 
 let root: HTMLElement;
@@ -92,7 +94,7 @@ function loadDifficulty(): number {
 function startFree(diff: number): void {
   const d = DIFFICULTIES[diff];
   const state = newGameWithPar(d.N, d.par, d.margin);
-  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff };
+  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff, replay: false };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
 }
@@ -106,6 +108,7 @@ function startTutorial(index: number): void {
     history: [],
     stepIndex: index,
     diff: session?.diff ?? loadDifficulty(),
+    replay: false,
   };
   draw();
 }
@@ -126,7 +129,7 @@ function advance(): void {
 }
 
 /** Resume an autosaved in-progress free-play game. */
-function restoreGame(saved: { state: GameState; initial: GameState; diff: number }): void {
+function restoreGame(saved: SavedGame): void {
   session = {
     mode: "free",
     state: saved.state,
@@ -134,6 +137,7 @@ function restoreGame(saved: { state: GameState; initial: GameState; diff: number
     history: [],
     stepIndex: 0,
     diff: saved.diff,
+    replay: saved.replay ?? false,
   };
   draw();
 }
@@ -149,7 +153,7 @@ function replayRecord(rec: GameRecord): void {
     par: rec.par,
     limit: rec.limit,
   };
-  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff };
+  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff, replay: true };
   draw();
 }
 
@@ -157,6 +161,8 @@ function replayRecord(rec: GameRecord): void {
 function recordCurrent(): void {
   const s = session.state;
   if (session.mode !== "free" || s.par === null || s.limit === null) return;
+  clearGame(); // the game is over; nothing in-progress to resume
+  if (session.replay) return; // replayed puzzles are practice — don't duplicate them
   historyEntries = addRecord({
     t: Date.now(),
     diff: session.diff,
@@ -168,7 +174,6 @@ function recordCurrent(): void {
     limit: s.limit,
     cells: session.initial.cells.slice(),
   });
-  clearGame(); // the game is over; nothing in-progress to resume
   drawHistory();
 }
 
@@ -327,7 +332,12 @@ function draw(): void {
   render(root, session.state, computeView());
   // Autosave only an in-progress free-play game (finished games go to history).
   if (session.mode === "free" && !isOver(session.state)) {
-    saveGame({ state: session.state, initial: session.initial, diff: session.diff });
+    saveGame({
+      state: session.state,
+      initial: session.initial,
+      diff: session.diff,
+      replay: session.replay,
+    });
   }
 }
 

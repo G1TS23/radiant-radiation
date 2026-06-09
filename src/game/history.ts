@@ -24,6 +24,7 @@ export interface SavedGame {
   state: GameState;
   initial: GameState;
   diff: number;
+  replay?: boolean; // a replayed puzzle (practice), not recorded again on finish
 }
 
 const HISTORY_KEY = "rr.history";
