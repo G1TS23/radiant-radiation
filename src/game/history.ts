@@ -1,8 +1,8 @@
 /**
  * history.ts — localStorage persistence: finished-game history + in-progress autosave.
  *
- * - History: a capped list of finished free-play games (result, moves, difficulty,
- *   stars) plus the initial board so a game can be replayed from scratch.
+ * - History: a capped list of finished free-play games (result, moves, difficulty)
+ *   plus the initial board so a game can be replayed from scratch.
  * - Autosave: the current in-progress free-play game, so a reload can resume it.
  */
 
@@ -17,7 +17,6 @@ export interface GameRecord {
   moves: number;
   par: number;
   limit: number;
-  stars: number;
   cells: boolean[]; // INITIAL board, for replay
 }
 

@@ -165,15 +165,6 @@ export function isOver(state: GameState): boolean {
   return isWin(state) || isLost(state);
 }
 
-/** Star rating on a win: 3 at/under par, 2 up to the midpoint, else 1. */
-export function stars(state: GameState): 0 | 1 | 2 | 3 {
-  if (!isWin(state) || state.par === null) return 0;
-  if (state.moves <= state.par) return 3;
-  if (state.limit === null) return 3;
-  const mid = state.par + Math.floor((state.limit - state.par) / 2);
-  return state.moves <= mid ? 2 : 1;
-}
-
 export interface Difficulty {
   id: string;
   label: string;

@@ -3,7 +3,7 @@
  *
  * Flow: boot -> tutorial (unless already done) -> free play.
  * Free play is driven by difficulty presets (size + par + slack). The board is
- * generated with a known par, so we can enforce a move limit and score stars.
+ * generated with a known par, so we can enforce a move limit and compare to par.
  * Tutorial boards stay unlimited (par/limit = null).
  */
 
@@ -15,7 +15,6 @@ import {
   moveCursor,
   isWin,
   isOver,
-  stars,
   type GameState,
   type Vertex,
 } from "./engine";
@@ -165,7 +164,6 @@ function recordCurrent(): void {
     moves: s.moves,
     par: s.par,
     limit: s.limit,
-    stars: stars(s),
     cells: session.initial.cells.slice(),
   });
   clearGame(); // the game is over; nothing in-progress to resume

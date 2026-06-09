@@ -256,7 +256,7 @@ body {
 }
 .hist-row {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
   padding: 6px 8px;
@@ -279,10 +279,6 @@ body {
 }
 .hist-moves {
   color: var(--dim);
-}
-.hist-stars {
-  color: var(--hint);
-  letter-spacing: -1px;
 }
 .hist-clear {
   margin-top: 12px;

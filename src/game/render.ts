@@ -12,7 +12,7 @@
  * so clicks fall through to the cells (mouse wiring lives in input.ts).
  */
 
-import { index, isWin, isLost, stars, type GameState, type Vertex } from "./engine";
+import { index, isWin, isLost, type GameState, type Vertex } from "./engine";
 import type { GameRecord } from "./history";
 
 export interface View {
@@ -30,7 +30,6 @@ export interface View {
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
 const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
-const STARS = (n: number): string => "★".repeat(n) + "☆".repeat(3 - n);
 
 /** Build the static skeleton once; subsequent calls reuse it. */
 function ensureSkeleton(root: HTMLElement): void {
@@ -133,12 +132,10 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   root.querySelector(".hud-goal")!.textContent =
     state.targetColor === null ? "goal: single color" : `goal: all ${COLOR_NAME(state.targetColor)}`;
 
-  // Status: win (+ stars when scored) or out of moves.
+  // Status: win or out of moves.
   const won = isWin(state);
   const lost = isLost(state);
-  const status = won
-    ? state.par !== null ? `>> solved  ${STARS(stars(state))}` : ">> solved"
-    : lost ? ">> out of moves" : "";
+  const status = won ? ">> solved" : lost ? ">> out of moves" : "";
   root.querySelector(".hud-status")!.textContent = status;
   root.classList.toggle("won", won);
   root.classList.toggle("lost", lost);
@@ -160,13 +157,11 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
   const rows = entries
     .map((e, i) => {
       const icon = e.result === "won" ? "✓" : "✗";
-      const stars = e.result === "won" ? STARS(e.stars) : "";
       return (
         `<li class="hist-row ${e.result}" data-index="${i}" title="click to replay">` +
         `<span class="hist-result">${icon}</span>` +
         `<span class="hist-diff">${e.diffLabel}</span>` +
         `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
-        `<span class="hist-stars">${stars}</span>` +
         `</li>`
       );
     })
