@@ -158,14 +158,16 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   const won = isWin(state);
   const lost = isLost(state);
 
-  // On a win, give each cell a wave delay based on its distance from the centre
-  // so the victory animation radiates outward (see .cli.won .cell in the CSS).
+  // On a win, give each cell a wave delay based on its distance from the last
+  // move (the centre of the cursor's 2x2) so the victory animation radiates out
+  // from where the player solved it (see .cli.won .cell in the CSS).
   if (won) {
-    const c = (state.N - 1) / 2;
+    const ox = state.cursor.i + 0.5;
+    const oy = state.cursor.j + 0.5;
     for (let y = 0; y < state.N; y++) {
       for (let x = 0; x < state.N; x++) {
         const cell = grid.children[index(state.N, x, y)] as HTMLElement;
-        cell.style.setProperty("--wd", `${Math.round(Math.hypot(x - c, y - c) * 45)}ms`);
+        cell.style.setProperty("--wd", `${Math.round(Math.hypot(x - ox, y - oy) * 40)}ms`);
       }
     }
   }
