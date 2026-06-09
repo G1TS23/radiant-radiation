@@ -35,10 +35,6 @@ export interface GameState {
   limit: number | null;
 }
 
-/** Grid-size bounds for free play (2x2 has no real puzzle, so min is 3). */
-export const MIN_N = 3;
-export const MAX_N = 8;
-
 /** Flat-array index of cell (x, y) on an NxN board. */
 export const index = (N: number, x: number, y: number): number => y * N + x;
 
@@ -68,42 +64,6 @@ export function flip2x2(cells: boolean[], N: number, i: number, j: number): void
     const k = index(N, i + dx, j + dy);
     cells[k] = !cells[k];
   }
-}
-
-/** How many random moves to apply when generating a puzzle of size N. */
-export const scrambleCount = (N: number): number => 3 * (N - 1) * (N - 1);
-
-/** Mutates `cells`: applies `k` random legal moves. */
-export function scramble(cells: boolean[], N: number, k: number, rng: RNG = Math.random): void {
-  const span = vertexSpan(N);
-  if (span < 1) return;
-  for (let n = 0; n < k; n++) {
-    const i = Math.floor(rng() * span);
-    const j = Math.floor(rng() * span);
-    flip2x2(cells, N, i, j);
-  }
-}
-
-/**
- * Build a fresh, guaranteed-solvable free-play game of size N.
- * Scrambles a solved board; retries if it lands back on monochrome (so the
- * player always gets something to do — except N=2 where it's unavoidable).
- */
-export function newGame(N: number, rng: RNG = Math.random): GameState {
-  const cells = createBoard(N, false);
-  for (let attempts = 0; attempts < 20; attempts++) {
-    scramble(cells, N, scrambleCount(N), rng);
-    if (!isMonochrome(cells)) break;
-  }
-  return {
-    N,
-    cells,
-    cursor: { i: 0, j: 0 },
-    moves: 0,
-    targetColor: null,
-    par: null,
-    limit: null,
-  };
 }
 
 /** All legal move vertices of an NxN board. */
