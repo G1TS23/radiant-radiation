@@ -85,3 +85,26 @@ describe("in-progress autosave", () => {
     expect(loadGame()).toBeNull();
   });
 });
+
+describe("validation against tampered storage", () => {
+  it("drops malformed records and keeps valid ones", () => {
+    const tampered: unknown[] = [
+      rec({ moves: 1 }),
+      { ...rec(), cells: [true] }, // wrong cells length
+      "garbage",
+      { ...rec(), result: "nope" }, // invalid result
+      { ...rec(), N: 0 }, // out-of-range N
+    ];
+    localStorage.setItem("rr.history", JSON.stringify(tampered));
+    const list = loadHistory();
+    expect(list).toHaveLength(1);
+    expect(list[0].moves).toBe(1);
+  });
+  it("rejects a save with a mismatched board", () => {
+    localStorage.setItem(
+      "rr.save",
+      JSON.stringify({ diff: 1, state: { N: 5, cells: [true] }, initial: {} }),
+    );
+    expect(loadGame()).toBeNull();
+  });
+});

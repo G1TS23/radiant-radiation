@@ -37,6 +37,10 @@ export interface View {
 const PAD = (n: number): string => String(n).padStart(3, "0");
 const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
 
+/** Escape free text before interpolating into innerHTML (text or attribute). */
+const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ESC[c]);
+
 /** Build the static skeleton once; subsequent calls reuse it. */
 function ensureSkeleton(root: HTMLElement): void {
   if (root.querySelector(".board")) return;
@@ -230,18 +234,19 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
   const rows = entries
     .map((e, i) => {
       const icon = e.result === "won" ? "✓" : "✗";
+      const diff = esc(e.diffLabel);
       const thumb =
-        `<span class="hist-thumb" style="--n:${e.N}" aria-hidden="true">` +
+        `<span class="hist-thumb" style="--n:${Number(e.N)}" aria-hidden="true">` +
         e.cells.map((c) => `<i${c ? ' class="on"' : ""}></i>`).join("") +
         `</span>`;
-      const label = `replay ${e.diffLabel} game, ${e.result} in ${e.moves} of ${e.limit} moves`;
+      const label = `replay ${diff} game, ${e.result} in ${Number(e.moves)} of ${Number(e.limit)} moves`;
       return (
         `<li>` +
         `<button class="hist-row ${e.result}" type="button" data-index="${i}" aria-label="${label}">` +
         thumb +
         `<span class="hist-result">${icon}</span>` +
-        `<span class="hist-diff">${e.diffLabel}</span>` +
-        `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
+        `<span class="hist-diff">${diff}</span>` +
+        `<span class="hist-moves">${Number(e.moves)}/${Number(e.limit)}</span>` +
         `<span class="hist-replay" aria-hidden="true">↻</span>` +
         `</button></li>`
       );
