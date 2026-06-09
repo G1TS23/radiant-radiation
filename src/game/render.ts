@@ -26,6 +26,10 @@ export interface View {
   hint?: Vertex | null;
   /** Tutorial progress, e.g. step 1 of 2. */
   step?: { current: number; total: number };
+  /** 2x2 to briefly flash after a move (touch feedback). */
+  flash?: Vertex | null;
+  /** Contextual primary button (next / retry / continue), shown when relevant. */
+  cta?: { label: string; action: string } | null;
 }
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
@@ -53,7 +57,19 @@ function ensureSkeleton(root: HTMLElement): void {
       <span class="hud-goal"></span>
       <span class="hud-status"></span>
     </div>
-    <p class="message"></p>
+    <div class="message-row">
+      <p class="message"></p>
+      <button class="cta" data-action="next"></button>
+    </div>
+    <nav class="toolbar" aria-label="controls">
+      <button data-action="undo">undo</button>
+      <button data-action="reset">reset</button>
+      <button class="free-only" data-action="new">new</button>
+      <button class="free-only" data-action="diff">difficulty</button>
+      <button data-action="theme">theme</button>
+      <button class="has-history-only" data-action="hist">history</button>
+      <button class="tut-only" data-action="skip">skip</button>
+    </nav>
     <footer class="keys">
       <span>[arrows] move</span>
       <span>[space/enter] flip</span>
@@ -104,11 +120,15 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
 
   if (grid.children.length !== state.N * state.N) buildCells(board, grid, state.N);
 
-  // Cell colors.
+  // Cell colors + flash on the just-flipped 2x2.
+  const f = view.flash ?? null;
   for (let y = 0; y < state.N; y++) {
     for (let x = 0; x < state.N; x++) {
       const i = index(state.N, x, y);
-      (grid.children[i] as HTMLElement).classList.toggle("on", state.cells[i]);
+      const cell = grid.children[i] as HTMLElement;
+      cell.classList.toggle("on", state.cells[i]);
+      const inFlash = !!f && (x === f.i || x === f.i + 1) && (y === f.j || y === f.j + 1);
+      cell.classList.toggle("flash", inFlash);
     }
   }
 
@@ -143,6 +163,20 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
 
   // Message / instruction line.
   root.querySelector(".message")!.textContent = view.message ?? "";
+
+  // Toolbar difficulty button label.
+  root.querySelector('[data-action="diff"]')!.textContent =
+    view.difficulty ? `diff: ${view.difficulty}` : "difficulty";
+
+  // Contextual CTA button (next / retry / continue).
+  const cta = root.querySelector<HTMLButtonElement>(".cta")!;
+  if (view.cta) {
+    cta.textContent = view.cta.label;
+    cta.dataset.action = view.cta.action;
+    cta.classList.add("show");
+  } else {
+    cta.classList.remove("show");
+  }
 }
 
 /** Render the side history panel. Rows carry data-index for replay wiring. */
@@ -158,10 +192,11 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
     .map((e, i) => {
       const icon = e.result === "won" ? "✓" : "✗";
       return (
-        `<li class="hist-row ${e.result}" data-index="${i}" title="click to replay">` +
+        `<li class="hist-row ${e.result}" data-index="${i}" title="replay this puzzle">` +
         `<span class="hist-result">${icon}</span>` +
         `<span class="hist-diff">${e.diffLabel}</span>` +
         `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
+        `<span class="hist-replay" aria-hidden="true">↻</span>` +
         `</li>`
       );
     })

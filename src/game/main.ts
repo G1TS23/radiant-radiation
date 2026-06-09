@@ -50,6 +50,8 @@ let root: HTMLElement;
 let historyPanel: HTMLElement | null;
 let historyEntries: GameRecord[] = [];
 let session: Session;
+let flash: Vertex | null = null; // 2x2 to flash after a move (touch feedback)
+let flashTimer: number | undefined;
 
 /** Deep-ish copy of a state (the only mutable part is the cells array). */
 function snapshot(s: GameState): GameState {
@@ -185,6 +187,20 @@ function setCursor(v: Vertex): void {
   session.state = { ...session.state, cursor: v };
 }
 
+/** Apply the move under the cursor, briefly flashing the 4 flipped cells. */
+function doMove(): void {
+  session.history.push(snapshot(session.state));
+  session.state = applyMoveAtCursor(session.state);
+  if (isOver(session.state)) recordCurrent();
+  flash = { ...session.state.cursor };
+  draw();
+  if (flashTimer !== undefined) clearTimeout(flashTimer);
+  flashTimer = window.setTimeout(() => {
+    flash = null;
+    draw();
+  }, 240);
+}
+
 const handlers: InputHandlers = {
   move(di, dj) {
     if (isOver(session.state)) return;
@@ -196,25 +212,19 @@ const handlers: InputHandlers = {
       advance();
       return;
     }
-    session.history.push(snapshot(session.state));
-    session.state = applyMoveAtCursor(session.state);
-    if (isOver(session.state)) recordCurrent();
-    draw();
+    doMove();
   },
-  clickCell(x, y) {
+  tapVertex(i, j) {
     if (isOver(session.state)) {
       advance();
       return;
     }
-    setCursor(clampVertex(session.state, x, y));
-    session.history.push(snapshot(session.state));
-    session.state = applyMoveAtCursor(session.state);
-    if (isOver(session.state)) recordCurrent();
-    draw();
+    setCursor(clampVertex(session.state, i, j));
+    doMove();
   },
-  hoverCell(x, y) {
+  pointVertex(i, j) {
     if (isOver(session.state)) return;
-    const v = clampVertex(session.state, x, y);
+    const v = clampVertex(session.state, i, j);
     if (v.i === session.state.cursor.i && v.j === session.state.cursor.j) return;
     setCursor(v);
     draw();
@@ -259,30 +269,39 @@ const handlers: InputHandlers = {
 
 function computeView(): View {
   const s = session.state;
+  const won = isWin(s);
 
   if (session.mode === "tutorial") {
     const step = TUTORIAL_STEPS[session.stepIndex];
     const isLast = session.stepIndex === TUTORIAL_STEPS.length - 1;
-    const won = isWin(s);
-    const cont = isLast ? "press [space] to start playing" : "press [space] to continue";
     return {
       mode: "tutorial",
       difficulty: null,
       step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
-      message: won ? `${step.successText} — ${cont}` : step.instruction,
+      message: won ? step.successText : step.instruction,
       hint: !won && s.moves === 0 ? step.hint ?? null : null,
+      flash,
+      cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,
     };
   }
 
   let message = "";
-  if (isWin(s)) message = "solved — [space] next puzzle · [r] replay";
-  else if (isOver(s)) message = "out of moves — [r] retry · [space] new puzzle";
+  let cta: View["cta"] = null;
+  if (won) {
+    message = "solved!";
+    cta = { label: "next puzzle ▶", action: "next" };
+  } else if (isOver(s)) {
+    message = "out of moves";
+    cta = { label: "retry ▶", action: "reset" };
+  }
 
   return {
     mode: "free",
     difficulty: DIFFICULTIES[session.diff].label,
     message,
     hint: null,
+    flash,
+    cta,
   };
 }
 
@@ -301,6 +320,25 @@ function drawHistory(): void {
   historyPanel.parentElement?.classList.toggle("has-history", historyEntries.length > 0);
 }
 
+/** Toggle the collapsible history panel (touch layout). */
+function toggleHistory(): void {
+  historyPanel?.parentElement?.classList.toggle("show-history");
+}
+
+/** Dispatch an on-screen toolbar / CTA button to the matching handler. */
+function onAction(action: string): void {
+  switch (action) {
+    case "undo": handlers.undo(); break;
+    case "reset": handlers.regen(); break;
+    case "new": handlers.newPuzzle(); break;
+    case "diff": handlers.resize(1); break;
+    case "theme": handlers.toggleTheme(); break;
+    case "hist": toggleHistory(); break;
+    case "skip": handlers.skip(); break;
+    case "next": handlers.commit(); break; // advances when the round is over
+  }
+}
+
 // --- boot ------------------------------------------------------------------
 
 function boot(): void {
@@ -309,6 +347,16 @@ function boot(): void {
   root = el;
 
   attachInput(root, handlers);
+
+  // On-screen controls (toolbar buttons + contextual CTA) live inside the board
+  // root; a button click never maps to a cell, so it can share the root.
+  root.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
+    if (btn?.dataset.action) {
+      e.stopPropagation();
+      onAction(btn.dataset.action);
+    }
+  });
 
   // History panel: render saved games and wire replay / clear.
   historyPanel = document.getElementById("history");

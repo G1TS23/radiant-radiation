@@ -90,7 +90,8 @@ body {
 /* --- board + grid --- */
 .board {
   position: relative;
-  width: 100%;
+  width: min(100%, 66vh); /* keep the board within the viewport height */
+  margin: 0 auto;
   aspect-ratio: 1;
 }
 .grid {
@@ -114,6 +115,17 @@ body {
 }
 .cell.on {
   background: var(--cell-on);
+}
+.cell.flash {
+  animation: cellflash 0.24s ease;
+}
+@keyframes cellflash {
+  from {
+    box-shadow: inset 0 0 0 99px color-mix(in srgb, var(--cursor) 40%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 99px transparent;
+  }
 }
 
 /* overlay layer: its own grid mirroring the cells, sitting on top.
@@ -162,10 +174,16 @@ body {
   margin-left: auto;
 }
 
-/* --- message line --- */
+/* --- message line + contextual CTA --- */
+.message-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-height: 1.6em;
+}
 .message {
   margin: 0;
-  min-height: 1.5em; /* avoid layout shift when empty */
   color: var(--fg);
 }
 .message::before {
@@ -174,6 +192,54 @@ body {
 }
 .message:empty::before {
   content: "";
+}
+.cta {
+  display: none;
+  font-family: var(--mono);
+  font-size: 0.95em;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.cta.show {
+  display: inline-block;
+}
+.cta:hover {
+  filter: brightness(1.08);
+}
+
+/* --- on-screen toolbar (shown on touch; desktop uses the keyboard) --- */
+.toolbar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.toolbar button {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  color: var(--fg);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 0 14px;
+  min-height: 44px; /* comfortable touch target */
+  cursor: pointer;
+}
+.toolbar button:active {
+  background: var(--panel);
+}
+.cli .tut-only {
+  display: none;
+}
+.cli.tutorial .tut-only {
+  display: inline-block;
+}
+.cli.tutorial .free-only {
+  display: none;
+}
+.layout:not(.has-history) .has-history-only {
+  display: none;
 }
 
 /* --- key hints --- */
@@ -256,13 +322,19 @@ body {
 }
 .hist-row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 10px;
   align-items: center;
   padding: 6px 8px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.hist-replay {
+  color: var(--dim);
+}
+.hist-row:hover .hist-replay {
+  color: var(--accent);
 }
 .hist-row:hover {
   background: var(--panel);
@@ -306,6 +378,27 @@ body {
     display: none !important; /* no centering spacer when stacked */
   }
   .layout.has-history .history {
+    width: min(92vw, 560px);
+  }
+}
+
+/* Touch devices: swap keyboard hints for the on-screen toolbar, and make the
+   history panel collapsible so the game stays above the fold. */
+@media (hover: none), (pointer: coarse) {
+  .keys {
+    display: none;
+  }
+  .toolbar {
+    display: flex;
+  }
+  .hist-spacer {
+    display: none !important;
+  }
+  .layout.has-history .history {
+    display: none;
+  }
+  .layout.has-history.show-history .history {
+    display: block;
     width: min(92vw, 560px);
   }
 }

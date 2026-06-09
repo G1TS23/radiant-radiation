@@ -1,10 +1,11 @@
 /**
- * input.ts — keyboard + mouse wiring. No game logic, no rendering.
+ * input.ts — keyboard + pointer wiring. No game logic, no rendering.
  *
  * Translates raw events into high-level intents and forwards them to handlers.
- * Mouse is wired by delegation on the root, so the grid can be rebuilt freely
- * without losing listeners. Cell coordinates are passed raw; clamping a cell to
- * a legal move vertex is the controller's job (it owns N).
+ * Pointer is wired by delegation on the root, so the grid can be rebuilt freely
+ * without losing listeners. A pointer position is mapped to the *nearest move
+ * vertex* (the intersection of 4 cells closest to the finger/cursor) so a single
+ * tap flips the 2x2 you point at; the controller clamps it to a legal vertex.
  */
 
 export interface InputHandlers {
@@ -12,10 +13,10 @@ export interface InputHandlers {
   move(di: number, dj: number): void;
   /** Space / Enter: apply the move under the cursor (or advance when solved). */
   commit(): void;
-  /** Click on a cell at (x, y). */
-  clickCell(x: number, y: number): void;
-  /** Hover a cell at (x, y) — used to preview the cursor. */
-  hoverCell(x: number, y: number): void;
+  /** Click/tap aiming at vertex (i, j) — applies the move there. */
+  tapVertex(i: number, j: number): void;
+  /** Hover over vertex (i, j) — previews the cursor (no move). */
+  pointVertex(i: number, j: number): void;
   /** R: reset the current puzzle to its starting position. */
   regen(): void;
   /** N: generate a new puzzle (free play). */
@@ -36,11 +37,20 @@ function isTextTarget(el: EventTarget | null): boolean {
   return !!n && (n.tagName === "INPUT" || n.tagName === "TEXTAREA" || n.isContentEditable);
 }
 
-function cellCoords(e: Event): [number, number] | null {
-  const target = e.target as HTMLElement | null;
-  const cell = target?.closest<HTMLElement>(".cell");
+/**
+ * Nearest move vertex to the pointer: pick the cell under the pointer and the
+ * corner of that cell closest to the hit point. Corners map to vertex anchors
+ * (i = x-1 left / x right, j = y-1 top / y bottom); the controller clamps them.
+ */
+function vertexFromEvent(e: MouseEvent): [number, number] | null {
+  const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>(".cell");
   if (!cell) return null;
-  return [Number(cell.dataset.x), Number(cell.dataset.y)];
+  const r = cell.getBoundingClientRect();
+  const x = Number(cell.dataset.x);
+  const y = Number(cell.dataset.y);
+  const i = (e.clientX - r.left) / r.width < 0.5 ? x - 1 : x;
+  const j = (e.clientY - r.top) / r.height < 0.5 ? y - 1 : y;
+  return [i, j];
 }
 
 /** Attach all input listeners. Returns a detach function. */
@@ -74,8 +84,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   };
 
   const onClick = (e: MouseEvent): void => {
-    const c = cellCoords(e);
-    if (c) h.clickCell(c[0], c[1]);
+    const v = vertexFromEvent(e);
+    if (v) h.tapVertex(v[0], v[1]);
   };
 
   // Right-click anywhere on the board undoes the last move (no context menu).
@@ -85,8 +95,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   };
 
   const onHover = (e: MouseEvent): void => {
-    const c = cellCoords(e);
-    if (c) h.hoverCell(c[0], c[1]);
+    const v = vertexFromEvent(e);
+    if (v) h.pointVertex(v[0], v[1]);
   };
 
   window.addEventListener("keydown", onKey);
