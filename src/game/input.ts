@@ -38,19 +38,34 @@ function isTextTarget(el: EventTarget | null): boolean {
 }
 
 /**
- * Nearest move vertex to the pointer: pick the cell under the pointer and the
- * corner of that cell closest to the hit point. Corners map to vertex anchors
- * (i = x-1 left / x right, j = y-1 top / y bottom); the controller clamps them.
+ * Nearest move vertex to the pointer, computed from grid geometry (not from the
+ * cell under the pointer). Mapping the pointer to the closest interior gridline
+ * means a hit on a gap — including the exact centre of a 2x2, which lands on the
+ * intersection of 4 cells — still resolves to the right vertex. Returns null for
+ * points clearly outside the board. The controller clamps the result.
  */
-function vertexFromEvent(e: MouseEvent): [number, number] | null {
-  const cell = (e.target as HTMLElement | null)?.closest<HTMLElement>(".cell");
-  if (!cell) return null;
-  const r = cell.getBoundingClientRect();
-  const x = Number(cell.dataset.x);
-  const y = Number(cell.dataset.y);
-  const i = (e.clientX - r.left) / r.width < 0.5 ? x - 1 : x;
-  const j = (e.clientY - r.top) / r.height < 0.5 ? y - 1 : y;
-  return [i, j];
+function vertexFromPoint(grid: HTMLElement | null, e: MouseEvent): [number, number] | null {
+  if (!grid) return null;
+  const cells = grid.children;
+  const N = Math.round(Math.sqrt(cells.length));
+  if (N < 2) return null;
+
+  const a = (cells[0] as HTMLElement).getBoundingClientRect();
+  const b = (cells[cells.length - 1] as HTMLElement).getBoundingClientRect();
+  const pad = 4; // tolerate the border / a gap at the very edges
+  if (
+    e.clientX < a.left - pad ||
+    e.clientX > b.right + pad ||
+    e.clientY < a.top - pad ||
+    e.clientY > b.bottom + pad
+  ) {
+    return null;
+  }
+
+  const fx = ((e.clientX - a.left) / (b.right - a.left)) * N; // 0..N in cell units
+  const fy = ((e.clientY - a.top) / (b.bottom - a.top)) * N;
+  const clamp = (v: number): number => Math.min(N - 2, Math.max(0, Math.round(v) - 1));
+  return [clamp(fx), clamp(fy)];
 }
 
 /** Attach all input listeners. Returns a detach function. */
@@ -83,8 +98,10 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
     e.preventDefault();
   };
 
+  const gridOf = (): HTMLElement | null => root.querySelector<HTMLElement>(".grid");
+
   const onClick = (e: MouseEvent): void => {
-    const v = vertexFromEvent(e);
+    const v = vertexFromPoint(gridOf(), e);
     if (v) h.tapVertex(v[0], v[1]);
   };
 
@@ -95,7 +112,7 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   };
 
   const onHover = (e: MouseEvent): void => {
-    const v = vertexFromEvent(e);
+    const v = vertexFromPoint(gridOf(), e);
     if (v) h.pointVertex(v[0], v[1]);
   };
 
