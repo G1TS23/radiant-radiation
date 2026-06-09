@@ -42,6 +42,7 @@ function ensureSkeleton(root: HTMLElement): void {
   if (root.querySelector(".board")) return;
   root.classList.add("cli");
   root.innerHTML = `
+    <p class="sr-only" role="status" aria-live="polite"></p>
     <header class="bar">
       <span class="bar-title">radiant-radiation</span>
       <span class="bar-right">

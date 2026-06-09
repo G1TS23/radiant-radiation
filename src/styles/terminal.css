@@ -34,6 +34,19 @@
   --cell-on: #3c483f; /* soft dark cell */
 }
 
+/* visually hidden but exposed to assistive tech (aria-live announcements) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 * {
   box-sizing: border-box;
   /* disable double-tap-to-zoom everywhere (touch-action isn't inherited, so it

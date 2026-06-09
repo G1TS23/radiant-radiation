@@ -14,6 +14,7 @@ import {
   applyMoveAtCursor,
   moveCursor,
   isWin,
+  isLost,
   isOver,
   type GameState,
   type Vertex,
@@ -117,11 +118,13 @@ function startFree(diff: number): void {
   session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff, replay: false };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
+  announce(`new ${d.label} puzzle, ${d.N} by ${d.N}`);
 }
 
 function startTutorial(index: number): void {
   cancelAutoAdvance();
-  const state = stepToState(TUTORIAL_STEPS[index]);
+  const step = TUTORIAL_STEPS[index];
+  const state = stepToState(step);
   session = {
     mode: "tutorial",
     state,
@@ -132,6 +135,7 @@ function startTutorial(index: number): void {
     replay: false,
   };
   draw();
+  announce(`${step.title}. ${step.instruction}`);
 }
 
 /** Move on once the round is finished (won, lost, or skipped). */
@@ -178,6 +182,7 @@ function replayRecord(rec: GameRecord): void {
   };
   session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff, replay: true };
   draw();
+  announce(`replaying ${DIFFICULTIES[rec.diff].label} puzzle, ${rec.N} by ${rec.N}`);
 }
 
 /** Record the just-finished free-play game into the history panel. */
@@ -238,6 +243,15 @@ function doMove(): void {
   }
   flash = { ...session.state.cursor };
   draw();
+  const s = session.state;
+  const black = s.cells.filter(Boolean).length;
+  announce(
+    isWin(s)
+      ? `solved in ${s.moves} move${s.moves === 1 ? "" : "s"}`
+      : isLost(s)
+        ? "out of moves"
+        : `${black} black, ${s.cells.length - black} white`,
+  );
   if (flashTimer !== undefined) clearTimeout(flashTimer);
   flashTimer = window.setTimeout(() => {
     flash = null;
@@ -250,6 +264,8 @@ const handlers: InputHandlers = {
     if (isOver(session.state)) return;
     session.state = moveCursor(session.state, di, dj);
     draw();
+    const { i, j } = session.state.cursor;
+    announce(`cursor row ${j + 1}, column ${i + 1}`);
   },
   commit() {
     if (isOver(session.state)) {
@@ -367,6 +383,12 @@ function draw(): void {
       replay: session.replay,
     });
   }
+}
+
+/** Send a message to the screen-reader live region. */
+function announce(msg: string): void {
+  const el = root.querySelector<HTMLElement>(".sr-only");
+  if (el) el.textContent = msg;
 }
 
 function drawHistory(): void {
