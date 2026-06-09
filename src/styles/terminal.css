@@ -291,6 +291,37 @@ body {
 /* --- end states --- */
 .cli.won .grid {
   border-color: var(--accent);
+  animation: winpulse 0.6s ease;
+}
+/* victory: a radial wave of accent light sweeping outward across the cells */
+.cli.won .cell {
+  animation: winwave 0.5s ease var(--wd, 0ms) both;
+}
+@keyframes winwave {
+  0% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 99px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  100% {
+    box-shadow: inset 0 0 0 99px transparent;
+  }
+}
+@keyframes winpulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cli.won .cell,
+  .cli.won .grid {
+    animation: none;
+  }
 }
 .cli.won .cursor-box,
 .cli.lost .cursor-box {

@@ -157,6 +157,18 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   // Status: win or out of moves.
   const won = isWin(state);
   const lost = isLost(state);
+
+  // On a win, give each cell a wave delay based on its distance from the centre
+  // so the victory animation radiates outward (see .cli.won .cell in the CSS).
+  if (won) {
+    const c = (state.N - 1) / 2;
+    for (let y = 0; y < state.N; y++) {
+      for (let x = 0; x < state.N; x++) {
+        const cell = grid.children[index(state.N, x, y)] as HTMLElement;
+        cell.style.setProperty("--wd", `${Math.round(Math.hypot(x - c, y - c) * 45)}ms`);
+      }
+    }
+  }
   const status = won ? ">> solved" : lost ? ">> out of moves" : "";
   root.querySelector(".hud-status")!.textContent = status;
   root.classList.toggle("won", won);
