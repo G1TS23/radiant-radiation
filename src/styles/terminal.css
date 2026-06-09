@@ -36,6 +36,9 @@
 
 * {
   box-sizing: border-box;
+  /* disable double-tap-to-zoom everywhere (touch-action isn't inherited, so it
+     must be set per element); scroll and intentional pinch-zoom still work */
+  touch-action: manipulation;
 }
 
 body {
