@@ -70,7 +70,8 @@ body {
 .bar {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 12px;
   border-bottom: 1px solid var(--line);
   padding-bottom: 8px;
 }
@@ -82,9 +83,29 @@ body {
   content: "> ";
   color: var(--dim);
 }
+.bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 .bar-meta {
   color: var(--dim);
   font-size: 0.85em;
+}
+/* theme toggle lives at the top, away from the game buttons; touch only */
+.bar-theme {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 1.1em;
+  line-height: 1;
+  padding: 7px 11px;
+  cursor: pointer;
+}
+.bar-theme:active {
+  background: var(--panel);
 }
 
 /* --- board + grid --- */
@@ -297,6 +318,7 @@ body {
   color: var(--fg);
 }
 .hist-head {
+  position: relative;
   font-size: 15px; /* match the title bar so the underline aligns */
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -306,6 +328,13 @@ body {
 }
 .hist-head::before {
   content: "> ";
+  color: var(--dim);
+}
+.hist-chevron {
+  display: none; /* desktop: no accordion */
+  position: absolute;
+  right: 0;
+  top: 0;
   color: var(--dim);
 }
 .hist-empty {
@@ -373,6 +402,7 @@ body {
   .layout {
     flex-direction: column;
     align-items: center;
+    gap: 16px;
   }
   .hist-spacer {
     display: none !important; /* no centering spacer when stacked */
@@ -391,14 +421,29 @@ body {
   .toolbar {
     display: flex;
   }
+  .bar-theme {
+    display: inline-block; /* theme toggle up top, off the game toolbar */
+  }
   .hist-spacer {
     display: none !important;
   }
-  .layout.has-history .history {
+  /* history is an accordion under the toolbar: head stays, body collapses */
+  .hist-head {
+    cursor: pointer;
+  }
+  .hist-chevron {
+    display: inline;
+  }
+  .hist-chevron::after {
+    content: "▸";
+  }
+  .layout.show-history .hist-chevron::after {
+    content: "▾";
+  }
+  .hist-body {
     display: none;
   }
-  .layout.has-history.show-history .history {
+  .layout.show-history .hist-body {
     display: block;
-    width: min(92vw, 560px);
   }
 }

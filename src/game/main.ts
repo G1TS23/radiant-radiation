@@ -333,7 +333,6 @@ function onAction(action: string): void {
     case "new": handlers.newPuzzle(); break;
     case "diff": handlers.resize(1); break;
     case "theme": handlers.toggleTheme(); break;
-    case "hist": toggleHistory(); break;
     case "skip": handlers.skip(); break;
     case "next": handlers.commit(); break; // advances when the round is over
   }
@@ -364,6 +363,10 @@ function boot(): void {
   drawHistory();
   historyPanel?.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
+    if (target.closest(".hist-head")) {
+      toggleHistory(); // accordion toggle (touch)
+      return;
+    }
     if (target.closest(".hist-clear")) {
       historyEntries = clearHistory();
       drawHistory();

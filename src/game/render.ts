@@ -42,7 +42,10 @@ function ensureSkeleton(root: HTMLElement): void {
   root.innerHTML = `
     <header class="bar">
       <span class="bar-title">radiant-radiation</span>
-      <span class="bar-meta"></span>
+      <span class="bar-right">
+        <span class="bar-meta"></span>
+        <button class="bar-theme" data-action="theme" aria-label="toggle theme">◐</button>
+      </span>
     </header>
     <div class="board">
       <div class="grid" role="grid" aria-label="puzzle grid"></div>
@@ -66,8 +69,6 @@ function ensureSkeleton(root: HTMLElement): void {
       <button data-action="reset">reset</button>
       <button class="free-only" data-action="new">new</button>
       <button class="free-only" data-action="diff">difficulty</button>
-      <button data-action="theme">theme</button>
-      <button class="has-history-only" data-action="hist">history</button>
       <button class="tut-only" data-action="skip">skip</button>
     </nav>
     <footer class="keys">
@@ -179,12 +180,16 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   }
 }
 
-/** Render the side history panel. Rows carry data-index for replay wiring. */
+/**
+ * Render the side history panel. The head doubles as an accordion toggle on
+ * touch (it carries a chevron); the body collapses there. Rows carry data-index
+ * for replay wiring.
+ */
 export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
-  const head = `<div class="hist-head">history</div>`;
+  const head = `<div class="hist-head">history<span class="hist-chevron" aria-hidden="true"></span></div>`;
 
   if (entries.length === 0) {
-    panel.innerHTML = head + `<p class="hist-empty">no games yet</p>`;
+    panel.innerHTML = head + `<div class="hist-body"><p class="hist-empty">no games yet</p></div>`;
     return;
   }
 
@@ -203,5 +208,7 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
     .join("");
 
   panel.innerHTML =
-    head + `<ul class="hist-list">${rows}</ul>` + `<button class="hist-clear">clear history</button>`;
+    head +
+    `<div class="hist-body"><ul class="hist-list">${rows}</ul>` +
+    `<button class="hist-clear">clear history</button></div>`;
 }
