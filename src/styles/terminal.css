@@ -438,6 +438,7 @@ body {
 }
 .hist-head {
   position: relative;
+  flex: 0 0 auto; /* stays put while the list below scrolls */
   font-size: 15px; /* match the title bar so the underline aligns */
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -542,6 +543,25 @@ body {
   }
   .layout.has-history .history {
     width: min(92vw, 560px);
+  }
+}
+
+/* Desktop: lock the page; the board/controls stay fixed and only the history
+   list scrolls (cap the panel to the viewport, scroll its body). */
+@media (hover: hover) and (pointer: fine) {
+  body {
+    overflow: hidden;
+  }
+  .layout.has-history .history {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 2 * clamp(12px, 4vw, 32px));
+  }
+  .hist-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 
