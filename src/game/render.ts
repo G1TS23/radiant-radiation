@@ -138,11 +138,12 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), view.hint ?? null);
 
   // Title bar meta: difficulty + size, or tutorial progress.
+  const size = `${state.N}×${state.N}`;
   const meta = view.mode === "tutorial" && view.step
     ? `tutorial ${view.step.current}/${view.step.total}`
     : view.difficulty
-      ? `${view.difficulty} · N=${state.N}`
-      : `N=${state.N}`;
+      ? `${view.difficulty} · ${size}`
+      : size;
   root.querySelector(".bar-meta")!.textContent = meta;
 
   // HUD: moves (with limit), par, goal.
