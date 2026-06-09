@@ -1,0 +1,63 @@
+/**
+ * view-model.ts — the session shape and the pure mapping from session state to
+ * the render View. No DOM, no mutation: given a session (+ transient flash) it
+ * returns what the UI should show.
+ */
+
+import { DIFFICULTIES, isWin, isOver, type GameState, type Vertex } from "./engine";
+import { TUTORIAL_STEPS } from "./tutorial";
+import type { View } from "./render";
+
+export type Mode = "tutorial" | "free";
+
+export interface Session {
+  mode: Mode;
+  state: GameState;
+  initial: GameState; // pristine copy, for [r] reset
+  history: GameState[]; // snapshots before each move, for [z] undo
+  stepIndex: number; // tutorial only
+  diff: number; // difficulty index (free play)
+  replay: boolean; // a replayed puzzle (practice) — not re-recorded on finish
+}
+
+/** The move the tutorial expects next (highlighted + the only one accepted). */
+export function tutorialExpected(session: Session): Vertex | null {
+  if (session.mode !== "tutorial" || isWin(session.state)) return null;
+  return TUTORIAL_STEPS[session.stepIndex].solution[session.state.moves] ?? null;
+}
+
+/** Pure mapping from the current session to the render View. */
+export function computeView(session: Session, flash: Vertex | null): View {
+  const s = session.state;
+  const won = isWin(s);
+
+  if (session.mode === "tutorial") {
+    const step = TUTORIAL_STEPS[session.stepIndex];
+    const isLast = session.stepIndex === TUTORIAL_STEPS.length - 1;
+    return {
+      mode: "tutorial",
+      difficulty: null,
+      step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
+      title: step.title,
+      message: won ? step.successText : step.instruction,
+      hint: tutorialExpected(session),
+      flash,
+      cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,
+    };
+  }
+
+  // The status (">> solved" / ">> out of moves") already shows in the HUD, so the
+  // message line stays empty here — only the action button appears next to it.
+  let cta: View["cta"] = null;
+  if (won) cta = { label: "next puzzle ▶", action: "next", loading: true };
+  else if (isOver(s)) cta = { label: "retry ▶", action: "reset" };
+
+  return {
+    mode: "free",
+    difficulty: DIFFICULTIES[session.diff].label,
+    message: "",
+    hint: null,
+    flash,
+    cta,
+  };
+}

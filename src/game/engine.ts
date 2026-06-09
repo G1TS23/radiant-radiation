@@ -104,14 +104,25 @@ export function newGameWithPar(
     for (let n = 0; n < k; n++) flip2x2(cells, N, verts[n].i, verts[n].j);
     if (!isMonochrome(cells)) break; // retry if the subset cancelled out
   }
+  return createState({ N, cells, par: k, limit: k + margin });
+}
+
+/** Build a fresh game state: cursor at the origin, 0 moves, unspecified fields null. */
+export function createState(opts: {
+  N: number;
+  cells: boolean[];
+  targetColor?: boolean | null;
+  par?: number | null;
+  limit?: number | null;
+}): GameState {
   return {
-    N,
-    cells,
+    N: opts.N,
+    cells: opts.cells,
     cursor: { i: 0, j: 0 },
     moves: 0,
-    targetColor: null,
-    par: k,
-    limit: k + margin,
+    targetColor: opts.targetColor ?? null,
+    par: opts.par ?? null,
+    limit: opts.limit ?? null,
   };
 }
 

@@ -13,7 +13,7 @@
  *   of combining moves. Win = any single color.
  */
 
-import { boardFromRows, type GameState, type Vertex } from "./engine";
+import { boardFromRows, createState, type GameState, type Vertex } from "./engine";
 
 export interface TutorialStep {
   id: string;
@@ -70,13 +70,5 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Build a playable GameState from a tutorial step. */
 export function stepToState(step: TutorialStep): GameState {
-  return {
-    N: step.N,
-    cells: step.cells.slice(),
-    cursor: { i: 0, j: 0 },
-    moves: 0,
-    targetColor: step.targetColor,
-    par: null,
-    limit: null,
-  };
+  return createState({ N: step.N, cells: step.cells.slice(), targetColor: step.targetColor });
 }

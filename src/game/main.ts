@@ -11,6 +11,7 @@ import {
   DIFFICULTIES,
   DEFAULT_DIFFICULTY,
   newGameWithPar,
+  createState,
   applyMoveAtCursor,
   moveCursor,
   isWin,
@@ -20,7 +21,7 @@ import {
   type Vertex,
 } from "./engine";
 import { TUTORIAL_STEPS, stepToState } from "./tutorial";
-import { render, renderHistory, type View } from "./render";
+import { render, renderHistory } from "./render";
 import { attachInput, type InputHandlers } from "./input";
 import {
   loadHistory,
@@ -32,22 +33,12 @@ import {
   type GameRecord,
   type SavedGame,
 } from "./history";
+import { getItem as readStorage, setItem as writeStorage } from "./storage";
+import { computeView, tutorialExpected, type Session } from "./view-model";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
 const DIFFICULTY_KEY = "rr.difficulty";
 const THEME_KEY = "rr.theme";
-
-type Mode = "tutorial" | "free";
-
-interface Session {
-  mode: Mode;
-  state: GameState;
-  initial: GameState; // pristine copy, for [r] reset
-  history: GameState[]; // snapshots before each move, for [z] undo
-  stepIndex: number; // tutorial only
-  diff: number; // difficulty index (free play)
-  replay: boolean; // a replayed puzzle (practice) — not re-recorded on finish
-}
 
 let root: HTMLElement;
 let historyPanel: HTMLElement | null;
@@ -81,22 +72,6 @@ function snapshot(s: GameState): GameState {
 }
 
 // --- persistence -----------------------------------------------------------
-
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStorage(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* ignore (private mode / disabled storage) */
-  }
-}
 
 const tutorialDone = (): boolean => readStorage(TUTORIAL_DONE_KEY) === "1";
 
@@ -171,15 +146,7 @@ function restoreGame(saved: SavedGame): void {
 /** Replay a finished game from its recorded initial board. */
 function replayRecord(rec: GameRecord): void {
   cancelAutoAdvance();
-  const state: GameState = {
-    N: rec.N,
-    cells: rec.cells.slice(),
-    cursor: { i: 0, j: 0 },
-    moves: 0,
-    targetColor: null,
-    par: rec.par,
-    limit: rec.limit,
-  };
+  const state = createState({ N: rec.N, cells: rec.cells.slice(), par: rec.par, limit: rec.limit });
   session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff, replay: true };
   draw();
   announce(`replaying ${DIFFICULTIES[rec.diff].label} puzzle, ${rec.N} by ${rec.N}`);
@@ -220,15 +187,9 @@ function setCursor(v: Vertex): void {
   session.state = { ...session.state, cursor: v };
 }
 
-/** The move the tutorial expects next (highlighted + the only one accepted). */
-function tutorialExpected(): Vertex | null {
-  if (session.mode !== "tutorial" || isWin(session.state)) return null;
-  return TUTORIAL_STEPS[session.stepIndex].solution[session.state.moves] ?? null;
-}
-
 /** In the tutorial, only the highlighted move is allowed (guided, can't stick). */
 function moveAllowed(v: Vertex): boolean {
-  const exp = tutorialExpected();
+  const exp = tutorialExpected(session);
   return !exp || (v.i === exp.i && v.j === exp.j);
 }
 
@@ -334,46 +295,8 @@ const handlers: InputHandlers = {
 
 // --- view + render ---------------------------------------------------------
 
-function computeView(): View {
-  const s = session.state;
-  const won = isWin(s);
-
-  if (session.mode === "tutorial") {
-    const step = TUTORIAL_STEPS[session.stepIndex];
-    const isLast = session.stepIndex === TUTORIAL_STEPS.length - 1;
-    return {
-      mode: "tutorial",
-      difficulty: null,
-      step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
-      title: step.title,
-      message: won ? step.successText : step.instruction,
-      hint: tutorialExpected(),
-      flash,
-      cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,
-    };
-  }
-
-  // The status (">> solved" / ">> out of moves") already shows in the HUD, so the
-  // message line stays empty here — only the action button appears next to it.
-  let cta: View["cta"] = null;
-  if (won) {
-    cta = { label: "next puzzle ▶", action: "next", loading: true };
-  } else if (isOver(s)) {
-    cta = { label: "retry ▶", action: "reset" };
-  }
-
-  return {
-    mode: "free",
-    difficulty: DIFFICULTIES[session.diff].label,
-    message: "",
-    hint: null,
-    flash,
-    cta,
-  };
-}
-
 function draw(): void {
-  render(root, session.state, computeView());
+  render(root, session.state, computeView(session, flash));
   // Autosave only an in-progress free-play game (finished games go to history).
   if (session.mode === "free" && !isOver(session.state)) {
     saveGame({

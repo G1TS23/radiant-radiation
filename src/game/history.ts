@@ -7,6 +7,7 @@
  */
 
 import type { GameState } from "./engine";
+import { getItem as read, setItem as write, removeItem as remove } from "./storage";
 
 export interface GameRecord {
   t: number; // timestamp (ms)
@@ -30,30 +31,6 @@ export interface SavedGame {
 const HISTORY_KEY = "rr.history";
 const SAVE_KEY = "rr.save";
 const CAP = 20;
-
-function read(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function write(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* ignore */
-  }
-}
-
-function remove(key: string): void {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    /* ignore */
-  }
-}
 
 // --- finished-game history --------------------------------------------------
 
