@@ -284,6 +284,8 @@ body {
   display: none; /* don't let an empty message offset the centered CTA */
 }
 .cta {
+  position: relative;
+  overflow: hidden;
   display: none;
   font-family: var(--mono);
   font-size: 0.95em;
@@ -298,6 +300,21 @@ body {
 }
 .cta:hover {
   filter: brightness(1.08);
+}
+/* loader: a fill sweeps across the button over the 5s auto-advance countdown */
+.cta.loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 22%, transparent);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: ctaload 5s linear forwards;
+}
+@keyframes ctaload {
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* --- on-screen toolbar (shown on touch; desktop uses the keyboard) --- */
@@ -386,7 +403,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .cli.won .cell,
   .cli.won .grid,
-  .hint-box {
+  .hint-box,
+  .cta.loading::after {
     animation: none;
   }
 }

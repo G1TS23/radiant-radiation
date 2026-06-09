@@ -54,6 +54,25 @@ let historyEntries: GameRecord[] = [];
 let session: Session;
 let flash: Vertex | null = null; // 2x2 to flash after a move (touch feedback)
 let flashTimer: number | undefined;
+let advanceTimer: number | undefined; // auto-advance to the next puzzle after a win
+
+/** Delay before the next puzzle appears automatically after a win. */
+const AUTO_ADVANCE_MS = 5000;
+
+function cancelAutoAdvance(): void {
+  if (advanceTimer !== undefined) {
+    clearTimeout(advanceTimer);
+    advanceTimer = undefined;
+  }
+}
+
+function scheduleAutoAdvance(): void {
+  cancelAutoAdvance();
+  advanceTimer = window.setTimeout(() => {
+    advanceTimer = undefined;
+    advance();
+  }, AUTO_ADVANCE_MS);
+}
 
 /** Deep-ish copy of a state (the only mutable part is the cells array). */
 function snapshot(s: GameState): GameState {
@@ -92,6 +111,7 @@ function loadDifficulty(): number {
 // --- session transitions ---------------------------------------------------
 
 function startFree(diff: number): void {
+  cancelAutoAdvance();
   const d = DIFFICULTIES[diff];
   const state = newGameWithPar(d.N, d.par, d.margin);
   session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff, replay: false };
@@ -100,6 +120,7 @@ function startFree(diff: number): void {
 }
 
 function startTutorial(index: number): void {
+  cancelAutoAdvance();
   const state = stepToState(TUTORIAL_STEPS[index]);
   session = {
     mode: "tutorial",
@@ -130,6 +151,7 @@ function advance(): void {
 
 /** Resume an autosaved in-progress free-play game. */
 function restoreGame(saved: SavedGame): void {
+  cancelAutoAdvance();
   session = {
     mode: "free",
     state: saved.state,
@@ -144,6 +166,7 @@ function restoreGame(saved: SavedGame): void {
 
 /** Replay a finished game from its recorded initial board. */
 function replayRecord(rec: GameRecord): void {
+  cancelAutoAdvance();
   const state: GameState = {
     N: rec.N,
     cells: rec.cells.slice(),
@@ -208,7 +231,11 @@ function moveAllowed(v: Vertex): boolean {
 function doMove(): void {
   session.history.push(snapshot(session.state));
   session.state = applyMoveAtCursor(session.state);
-  if (isOver(session.state)) recordCurrent();
+  if (isOver(session.state)) {
+    recordCurrent();
+    // In free play, auto-advance to the next puzzle a few seconds after a win.
+    if (session.mode === "free" && isWin(session.state)) scheduleAutoAdvance();
+  }
   flash = { ...session.state.cursor };
   draw();
   if (flashTimer !== undefined) clearTimeout(flashTimer);
@@ -254,6 +281,7 @@ const handlers: InputHandlers = {
   },
   regen() {
     // Reset the current puzzle to its starting position (same board, moves 0).
+    cancelAutoAdvance();
     session.state = snapshot(session.initial);
     session.history = [];
     draw();
@@ -313,7 +341,7 @@ function computeView(): View {
   // message line stays empty here — only the action button appears next to it.
   let cta: View["cta"] = null;
   if (won) {
-    cta = { label: "next puzzle ▶", action: "next" };
+    cta = { label: "next puzzle ▶", action: "next", loading: true };
   } else if (isOver(s)) {
     cta = { label: "retry ▶", action: "reset" };
   }

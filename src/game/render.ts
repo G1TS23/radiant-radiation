@@ -31,7 +31,7 @@ export interface View {
   /** 2x2 to briefly flash after a move (touch feedback). */
   flash?: Vertex | null;
   /** Contextual primary button (next / retry / continue), shown when relevant. */
-  cta?: { label: string; action: string } | null;
+  cta?: { label: string; action: string; loading?: boolean } | null;
 }
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
@@ -204,8 +204,10 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
     cta.textContent = view.cta.label;
     cta.dataset.action = view.cta.action;
     cta.classList.add("show");
+    cta.classList.toggle("loading", !!view.cta.loading);
   } else {
     cta.classList.remove("show");
+    cta.classList.remove("loading");
   }
 }
 
