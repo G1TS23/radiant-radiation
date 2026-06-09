@@ -20,6 +20,8 @@ export interface View {
   mode: "free" | "tutorial";
   /** Difficulty label for the title bar (free play); null in tutorial. */
   difficulty?: string | null;
+  /** Tutorial heading shown above the grid. */
+  title?: string | null;
   /** Instruction / status line (tutorial prompt, or a free-play hint). */
   message?: string;
   /** Recommended move to highlight, if any. */
@@ -47,6 +49,11 @@ function ensureSkeleton(root: HTMLElement): void {
         <button class="bar-theme" data-action="theme" aria-label="toggle theme">◐</button>
       </span>
     </header>
+    <section class="tut-text">
+      <p class="tut-title"></p>
+      <p class="tut-body"></p>
+      <button class="tut-skip" data-action="skip">skip tutorial →</button>
+    </section>
     <div class="board">
       <div class="grid" role="grid" aria-label="puzzle grid"></div>
       <div class="overlay" aria-hidden="true">
@@ -173,11 +180,18 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   }
   const status = won ? ">> solved" : lost ? ">> out of moves" : "";
   root.querySelector(".hud-status")!.textContent = status;
+  const tutorial = view.mode === "tutorial";
   root.classList.toggle("won", won);
   root.classList.toggle("lost", lost);
-  root.classList.toggle("tutorial", view.mode === "tutorial");
+  root.classList.toggle("tutorial", tutorial);
+  // Mirror onto the layout so the (sibling) history panel can hide in tutorial.
+  root.parentElement?.classList.toggle("tutorial", tutorial);
 
-  // Message / instruction line.
+  // Tutorial text block above the grid.
+  root.querySelector(".tut-title")!.textContent = view.title ?? "";
+  root.querySelector(".tut-body")!.textContent = tutorial ? (view.message ?? "") : "";
+
+  // Message / instruction line (below the grid; hidden in tutorial via CSS).
   root.querySelector(".message")!.textContent = view.message ?? "";
 
   // Toolbar difficulty button label.

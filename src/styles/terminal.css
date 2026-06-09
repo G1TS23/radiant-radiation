@@ -175,8 +175,19 @@ body {
   box-shadow: 0 0 0 1px var(--bg), inset 0 0 0 1px var(--bg);
 }
 .hint-box {
-  border: 2px dashed var(--hint);
+  border: 3px solid var(--hint);
+  background: color-mix(in srgb, var(--hint) 20%, transparent);
   z-index: 1;
+  animation: hintpulse 1.2s ease-in-out infinite;
+}
+@keyframes hintpulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 
 /* --- HUD --- */
@@ -196,6 +207,55 @@ body {
   color: var(--accent);
   font-weight: 600;
   margin-left: auto;
+}
+
+/* --- tutorial: clean, focused, text above the grid --- */
+.tut-text {
+  display: none;
+}
+.cli.tutorial .tut-text {
+  display: block;
+}
+.tut-title {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 1.05em;
+  letter-spacing: 0.02em;
+}
+.tut-title::before {
+  content: "> ";
+  color: var(--dim);
+}
+.tut-body {
+  margin: 0;
+  color: var(--fg);
+  line-height: 1.6;
+}
+.tut-skip {
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.85em;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tut-skip:hover {
+  color: var(--fg);
+}
+/* strip the game chrome during the tutorial */
+.cli.tutorial .hud,
+.cli.tutorial .keys,
+.cli.tutorial .toolbar,
+.cli.tutorial .message,
+.cli.tutorial .bar-theme {
+  display: none;
+}
+.layout.tutorial .history,
+.layout.tutorial .hist-spacer {
+  display: none !important;
 }
 
 /* --- message line + contextual CTA --- */
@@ -319,7 +379,8 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .cli.won .cell,
-  .cli.won .grid {
+  .cli.won .grid,
+  .hint-box {
     animation: none;
   }
 }

@@ -187,6 +187,18 @@ function setCursor(v: Vertex): void {
   session.state = { ...session.state, cursor: v };
 }
 
+/** The move the tutorial expects next (highlighted + the only one accepted). */
+function tutorialExpected(): Vertex | null {
+  if (session.mode !== "tutorial" || isWin(session.state)) return null;
+  return TUTORIAL_STEPS[session.stepIndex].solution[session.state.moves] ?? null;
+}
+
+/** In the tutorial, only the highlighted move is allowed (guided, can't stick). */
+function moveAllowed(v: Vertex): boolean {
+  const exp = tutorialExpected();
+  return !exp || (v.i === exp.i && v.j === exp.j);
+}
+
 /** Apply the move under the cursor, briefly flashing the 4 flipped cells. */
 function doMove(): void {
   session.history.push(snapshot(session.state));
@@ -212,6 +224,7 @@ const handlers: InputHandlers = {
       advance();
       return;
     }
+    if (!moveAllowed(session.state.cursor)) return; // tutorial: must be on the hint
     doMove();
   },
   tapVertex(i, j) {
@@ -219,7 +232,12 @@ const handlers: InputHandlers = {
       advance();
       return;
     }
-    setCursor(clampVertex(session.state, i, j));
+    const v = clampVertex(session.state, i, j);
+    setCursor(v);
+    if (!moveAllowed(v)) {
+      draw(); // move the cursor for feedback, but don't flip (not the hinted move)
+      return;
+    }
     doMove();
   },
   pointVertex(i, j) {
@@ -278,8 +296,9 @@ function computeView(): View {
       mode: "tutorial",
       difficulty: null,
       step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
+      title: step.title,
       message: won ? step.successText : step.instruction,
-      hint: !won && s.moves === 0 ? step.hint ?? null : null,
+      hint: tutorialExpected(),
       flash,
       cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,
     };

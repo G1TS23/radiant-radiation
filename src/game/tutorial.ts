@@ -20,10 +20,17 @@ export interface TutorialStep {
   N: number;
   cells: boolean[];
   targetColor: boolean | null;
+  /** Welcome / heading line shown above the grid. */
+  title: string;
+  /** Explanation shown above the grid. */
   instruction: string;
   successText: string;
-  /** Recommended next move, highlighted as a hint. */
-  hint?: Vertex;
+  /**
+   * The exact move sequence that solves the step. The current move (solution
+   * [movesMade]) is highlighted, and in the tutorial only that move is accepted,
+   * so the player is guided step by step and can't get stuck.
+   */
+  solution: Vertex[];
 }
 
 function step(
@@ -41,9 +48,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     "..",
   ], {
     targetColor: true, // goal: all black
-    instruction: "this is the brush. one click flips all 4 cells. make them black.",
-    successText: "nice. that's the brush.",
-    hint: { i: 0, j: 0 },
+    title: "welcome to radiant-radiation",
+    instruction:
+      "the goal is to make the whole grid a single color. you paint with a 2×2 brush: tap the highlighted square and its 4 cells flip together. try it — make them all black.",
+    successText: "nice — that's the brush. flipping 4 cells at once.",
+    solution: [{ i: 0, j: 0 }],
   }),
   step("combine", [
     "##.",
@@ -51,9 +60,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     ".##",
   ], {
     targetColor: null, // any single color wins
-    instruction: "now combine moves. clear the board to a single color.",
-    successText: "solved. you're ready.",
-    hint: { i: 0, j: 0 },
+    title: "combining flips",
+    instruction:
+      "on bigger grids the brushes overlap, so each flip also changes its neighbors. follow the highlighted squares, in order, to clear the board to one color.",
+    successText: "solved! you've got the idea — over to you.",
+    solution: [{ i: 0, j: 0 }, { i: 1, j: 1 }],
   }),
 ];
 
