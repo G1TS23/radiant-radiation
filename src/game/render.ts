@@ -196,8 +196,13 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
   const rows = entries
     .map((e, i) => {
       const icon = e.result === "won" ? "✓" : "✗";
+      const thumb =
+        `<span class="hist-thumb" style="--n:${e.N}" aria-hidden="true">` +
+        e.cells.map((c) => `<i${c ? ' class="on"' : ""}></i>`).join("") +
+        `</span>`;
       return (
         `<li class="hist-row ${e.result}" data-index="${i}" title="replay this puzzle">` +
+        thumb +
         `<span class="hist-result">${icon}</span>` +
         `<span class="hist-diff">${e.diffLabel}</span>` +
         `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
