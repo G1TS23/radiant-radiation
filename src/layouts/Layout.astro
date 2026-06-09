@@ -1,42 +1,41 @@
 ---
 interface Props {
-	title?: string;
+  title?: string;
 }
 const { title = "radiant-radiation" } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-		<script is:inline>
-			// Apply the saved/system theme before first paint to avoid a flash.
-			(() => {
-				try {
-					const s = localStorage.getItem("rr.theme");
-					const light =
-						s === "light" ||
-						(s === null && matchMedia("(prefers-color-scheme: light)").matches);
-					if (light) document.documentElement.classList.add("light");
-				} catch {}
-			})();
-		</script>
-	</head>
-	<body>
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <script is:inline>
+      // Apply the saved/system theme before first paint to avoid a flash.
+      (() => {
+        try {
+          const s = localStorage.getItem("rr.theme");
+          const light =
+            s === "light" || (s === null && matchMedia("(prefers-color-scheme: light)").matches);
+          if (light) document.documentElement.classList.add("light");
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
 </html>
 
 <style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
 </style>

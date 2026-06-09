@@ -49,8 +49,11 @@ function coerceRecord(r: unknown): GameRecord | null {
   const N = int(o.N, 2, 16);
   if (N === null || !isBoolArray(o.cells, N * N)) return null;
   if (o.result !== "won" && o.result !== "lost") return null;
-  const t = int(o.t), diff = int(o.diff, 0, 99);
-  const moves = int(o.moves), par = int(o.par), limit = int(o.limit);
+  const t = int(o.t),
+    diff = int(o.diff, 0, 99);
+  const moves = int(o.moves),
+    par = int(o.par),
+    limit = int(o.limit);
   if (t === null || diff === null || moves === null || par === null || limit === null) return null;
   return {
     t,
@@ -72,7 +75,8 @@ function coerceState(s: unknown): GameState | null {
   const N = int(o.N, 2, 16);
   if (N === null || !isBoolArray(o.cells, N * N)) return null;
   const c = o.cursor as Record<string, unknown> | undefined;
-  const ci = int(c?.i, 0, N), cj = int(c?.j, 0, N);
+  const ci = int(c?.i, 0, N),
+    cj = int(c?.j, 0, N);
   const moves = int(o.moves);
   if (ci === null || cj === null || moves === null) return null;
   if (o.targetColor !== null && typeof o.targetColor !== "boolean") return null;
@@ -94,7 +98,10 @@ export function loadHistory(): GameRecord[] {
   try {
     const v = JSON.parse(raw);
     if (!Array.isArray(v)) return [];
-    return v.map(coerceRecord).filter((r): r is GameRecord => r !== null).slice(0, CAP);
+    return v
+      .map(coerceRecord)
+      .filter((r): r is GameRecord => r !== null)
+      .slice(0, CAP);
   } catch {
     return [];
   }

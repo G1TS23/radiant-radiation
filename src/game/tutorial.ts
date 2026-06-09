@@ -43,10 +43,7 @@ function step(
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
-  step("brush", [
-    "..",
-    "..",
-  ], {
+  step("brush", ["..", ".."], {
     targetColor: true, // goal: all black
     title: "welcome to radiant-radiation",
     instruction:
@@ -54,17 +51,16 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     successText: "nice — that's the brush. flipping 4 cells at once.",
     solution: [{ i: 0, j: 0 }],
   }),
-  step("combine", [
-    "##.",
-    "#.#",
-    ".##",
-  ], {
+  step("combine", ["##.", "#.#", ".##"], {
     targetColor: null, // any single color wins
     title: "combining flips",
     instruction:
       "on bigger grids the brushes overlap, so each flip also changes its neighbors. follow the highlighted squares, in order, to clear the board to one color.",
     successText: "solved! you've got the idea — over to you.",
-    solution: [{ i: 0, j: 0 }, { i: 1, j: 1 }],
+    solution: [
+      { i: 0, j: 0 },
+      { i: 1, j: 1 },
+    ],
   }),
 ];
 

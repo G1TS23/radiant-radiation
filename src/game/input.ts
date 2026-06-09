@@ -79,10 +79,18 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   const onKey = (e: KeyboardEvent): void => {
     if (isTextTarget(e.target)) return;
     switch (e.key) {
-      case "ArrowUp": h.move(0, -1); break;
-      case "ArrowDown": h.move(0, 1); break;
-      case "ArrowLeft": h.move(-1, 0); break;
-      case "ArrowRight": h.move(1, 0); break;
+      case "ArrowUp":
+        h.move(0, -1);
+        break;
+      case "ArrowDown":
+        h.move(0, 1);
+        break;
+      case "ArrowLeft":
+        h.move(-1, 0);
+        break;
+      case "ArrowRight":
+        h.move(1, 0);
+        break;
       case " ":
       case "Enter":
         // Let a focused button/link handle Space/Enter (activate itself).
@@ -90,20 +98,35 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
         h.commit();
         break;
       case "r":
-      case "R": h.regen(); break;
+      case "R":
+        h.regen();
+        break;
       case "n":
-      case "N": h.newPuzzle(); break;
+      case "N":
+        h.newPuzzle();
+        break;
       case "z":
-      case "Z": h.undo(); break;
+      case "Z":
+        h.undo();
+        break;
       case "s":
-      case "S": h.skip(); break;
+      case "S":
+        h.skip();
+        break;
       case "t":
-      case "T": h.toggleTheme(); break;
+      case "T":
+        h.toggleTheme();
+        break;
       case "d":
       case "D":
-      case "]": h.resize(1); break; // cycle difficulty forward
-      case "[": h.resize(-1); break; // cycle difficulty backward
-      default: return; // don't preventDefault for keys we ignore
+      case "]":
+        h.resize(1);
+        break; // cycle difficulty forward
+      case "[":
+        h.resize(-1);
+        break; // cycle difficulty backward
+      default:
+        return; // don't preventDefault for keys we ignore
     }
     e.preventDefault();
   };

@@ -19,16 +19,16 @@ challenge per difficulty.
 
 ## Controls
 
-| | Keyboard | Pointer |
-|---|---|---|
-| Move cursor | arrows | hover |
-| Flip the 2×2 | space / enter | tap / click |
-| Undo | `z` | right-click |
-| Reset puzzle | `r` | toolbar |
-| New puzzle | `n` | toolbar |
-| Cycle difficulty | `d` / `[` `]` | toolbar |
-| Toggle theme | `t` | top-right button |
-| Skip tutorial | `s` | link |
+|                  | Keyboard      | Pointer          |
+| ---------------- | ------------- | ---------------- |
+| Move cursor      | arrows        | hover            |
+| Flip the 2×2     | space / enter | tap / click      |
+| Undo             | `z`           | right-click      |
+| Reset puzzle     | `r`           | toolbar          |
+| New puzzle       | `n`           | toolbar          |
+| Cycle difficulty | `d` / `[` `]` | toolbar          |
+| Toggle theme     | `t`           | top-right button |
+| Skip tutorial    | `s`           | link             |
 
 On touch devices the keyboard hints are replaced by an on-screen toolbar, and the
 history panel becomes a collapsible accordion.

@@ -38,7 +38,13 @@ const PAD = (n: number): string => String(n).padStart(3, "0");
 const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
 
 /** Escape free text before interpolating into innerHTML (text or attribute). */
-const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const ESC: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ESC[c]);
 
 /** Build the static skeleton once; subsequent calls reuse it. */
@@ -151,20 +157,22 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
 
   // Title bar meta: difficulty + size, or tutorial progress.
   const size = `${state.N}×${state.N}`;
-  const meta = view.mode === "tutorial" && view.step
-    ? `tutorial ${view.step.current}/${view.step.total}`
-    : view.difficulty
-      ? `${view.difficulty} · ${size}`
-      : size;
+  const meta =
+    view.mode === "tutorial" && view.step
+      ? `tutorial ${view.step.current}/${view.step.total}`
+      : view.difficulty
+        ? `${view.difficulty} · ${size}`
+        : size;
   root.querySelector(".bar-meta")!.textContent = meta;
 
   // HUD: moves (with limit), par, goal.
   root.querySelector(".hud-moves")!.textContent =
     `moves: ${PAD(state.moves)}` + (state.limit !== null ? ` / ${PAD(state.limit)}` : "");
-  root.querySelector(".hud-par")!.textContent =
-    state.par !== null ? `par: ${PAD(state.par)}` : "";
+  root.querySelector(".hud-par")!.textContent = state.par !== null ? `par: ${PAD(state.par)}` : "";
   root.querySelector(".hud-goal")!.textContent =
-    state.targetColor === null ? "goal: single color" : `goal: all ${COLOR_NAME(state.targetColor)}`;
+    state.targetColor === null
+      ? "goal: single color"
+      : `goal: all ${COLOR_NAME(state.targetColor)}`;
 
   // Status: win or out of moves.
   const won = isWin(state);
@@ -200,8 +208,9 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   root.querySelector(".message")!.textContent = view.message ?? "";
 
   // Toolbar difficulty button label.
-  root.querySelector('[data-action="diff"]')!.textContent =
-    view.difficulty ? `diff: ${view.difficulty}` : "difficulty";
+  root.querySelector('[data-action="diff"]')!.textContent = view.difficulty
+    ? `diff: ${view.difficulty}`
+    : "difficulty";
 
   // Contextual CTA button (next / retry / continue).
   const cta = root.querySelector<HTMLButtonElement>(".cta")!;

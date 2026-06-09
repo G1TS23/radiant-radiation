@@ -46,8 +46,7 @@ export const isVertex = (N: number, i: number, j: number): boolean =>
   i >= 0 && j >= 0 && i <= N - 2 && j <= N - 2;
 
 /** A fresh monochrome board (default all white). */
-export const createBoard = (N: number, color = false): boolean[] =>
-  new Array(N * N).fill(color);
+export const createBoard = (N: number, color = false): boolean[] => new Array(N * N).fill(color);
 
 /** True if every cell shares the same color. */
 export const isMonochrome = (cells: boolean[]): boolean =>
