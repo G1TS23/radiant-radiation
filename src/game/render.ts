@@ -245,6 +245,6 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
 
   panel.innerHTML =
     head +
-    `<div class="hist-body"><ul class="hist-list">${rows}</ul>` +
-    `<button class="hist-clear">clear history</button></div>`;
+    `<div class="hist-body"><ul class="hist-list">${rows}</ul></div>` +
+    `<button class="hist-clear">clear history</button>`;
 }
