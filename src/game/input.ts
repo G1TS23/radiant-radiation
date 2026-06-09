@@ -37,6 +37,12 @@ function isTextTarget(el: EventTarget | null): boolean {
   return !!n && (n.tagName === "INPUT" || n.tagName === "TEXTAREA" || n.isContentEditable);
 }
 
+/** True when focus is on a control that owns Space/Enter (button, link…). */
+function isControlTarget(el: EventTarget | null): boolean {
+  const n = el as HTMLElement | null;
+  return !!n?.closest?.('button, a[href], [role="button"]');
+}
+
 /**
  * Nearest move vertex to the pointer, computed from grid geometry (not from the
  * cell under the pointer). Mapping the pointer to the closest interior gridline
@@ -78,7 +84,11 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "ArrowLeft": h.move(-1, 0); break;
       case "ArrowRight": h.move(1, 0); break;
       case " ":
-      case "Enter": h.commit(); break;
+      case "Enter":
+        // Let a focused button/link handle Space/Enter (activate itself).
+        if (isControlTarget(e.target)) return;
+        h.commit();
+        break;
       case "r":
       case "R": h.regen(); break;
       case "n":

@@ -217,7 +217,9 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
  * for replay wiring.
  */
 export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
-  const head = `<div class="hist-head">history<span class="hist-chevron" aria-hidden="true"></span></div>`;
+  const head =
+    `<button class="hist-head" type="button" aria-label="history (toggle)">` +
+    `history<span class="hist-chevron" aria-hidden="true"></span></button>`;
 
   if (entries.length === 0) {
     panel.innerHTML = head + `<div class="hist-body"><p class="hist-empty">no games yet</p></div>`;
@@ -231,14 +233,16 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
         `<span class="hist-thumb" style="--n:${e.N}" aria-hidden="true">` +
         e.cells.map((c) => `<i${c ? ' class="on"' : ""}></i>`).join("") +
         `</span>`;
+      const label = `replay ${e.diffLabel} game, ${e.result} in ${e.moves} of ${e.limit} moves`;
       return (
-        `<li class="hist-row ${e.result}" data-index="${i}" title="replay this puzzle">` +
+        `<li>` +
+        `<button class="hist-row ${e.result}" type="button" data-index="${i}" aria-label="${label}">` +
         thumb +
         `<span class="hist-result">${icon}</span>` +
         `<span class="hist-diff">${e.diffLabel}</span>` +
         `<span class="hist-moves">${e.moves}/${e.limit}</span>` +
         `<span class="hist-replay" aria-hidden="true">↻</span>` +
-        `</li>`
+        `</button></li>`
       );
     })
     .join("");
