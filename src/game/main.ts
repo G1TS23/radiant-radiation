@@ -90,7 +90,15 @@ function startFree(diff: number): void {
   cancelAutoAdvance();
   const d = DIFFICULTIES[diff];
   const state = newGameWithPar(d.N, d.par, d.margin);
-  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff, replay: false };
+  session = {
+    mode: "free",
+    state,
+    initial: snapshot(state),
+    history: [],
+    stepIndex: 0,
+    diff,
+    replay: false,
+  };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
   announce(`new ${d.label} puzzle, ${d.N} by ${d.N}`);
@@ -147,7 +155,15 @@ function restoreGame(saved: SavedGame): void {
 function replayRecord(rec: GameRecord): void {
   cancelAutoAdvance();
   const state = createState({ N: rec.N, cells: rec.cells.slice(), par: rec.par, limit: rec.limit });
-  session = { mode: "free", state, initial: snapshot(state), history: [], stepIndex: 0, diff: rec.diff, replay: true };
+  session = {
+    mode: "free",
+    state,
+    initial: snapshot(state),
+    history: [],
+    stepIndex: 0,
+    diff: rec.diff,
+    replay: true,
+  };
   draw();
   announce(`replaying ${DIFFICULTIES[rec.diff].label} puzzle, ${rec.N} by ${rec.N}`);
 }
@@ -326,16 +342,35 @@ function toggleHistory(): void {
   historyPanel?.parentElement?.classList.toggle("show-history");
 }
 
+/** On-screen control actions (data-action values). */
+const ACTIONS = ["undo", "reset", "new", "diff", "theme", "skip", "next"] as const;
+type Action = (typeof ACTIONS)[number];
+const isAction = (s: string): s is Action => (ACTIONS as readonly string[]).includes(s);
+
 /** Dispatch an on-screen toolbar / CTA button to the matching handler. */
-function onAction(action: string): void {
+function onAction(action: Action): void {
   switch (action) {
-    case "undo": handlers.undo(); break;
-    case "reset": handlers.regen(); break;
-    case "new": handlers.newPuzzle(); break;
-    case "diff": handlers.resize(1); break;
-    case "theme": handlers.toggleTheme(); break;
-    case "skip": handlers.skip(); break;
-    case "next": handlers.commit(); break; // advances when the round is over
+    case "undo":
+      handlers.undo();
+      break;
+    case "reset":
+      handlers.regen();
+      break;
+    case "new":
+      handlers.newPuzzle();
+      break;
+    case "diff":
+      handlers.resize(1);
+      break;
+    case "theme":
+      handlers.toggleTheme();
+      break;
+    case "skip":
+      handlers.skip();
+      break;
+    case "next":
+      handlers.commit();
+      break; // advances when the round is over
   }
 }
 
@@ -346,15 +381,19 @@ function boot(): void {
   if (!el) return;
   root = el;
 
+  // Single source for the auto-advance duration: the CTA loader reads it in CSS.
+  root.style.setProperty("--auto-advance", `${AUTO_ADVANCE_MS}ms`);
+
   attachInput(root, handlers);
 
   // On-screen controls (toolbar buttons + contextual CTA) live inside the board
   // root; a button click never maps to a cell, so it can share the root.
   root.addEventListener("click", (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
-    if (btn?.dataset.action) {
+    const action = btn?.dataset.action;
+    if (action && isAction(action)) {
       e.stopPropagation();
-      onAction(btn.dataset.action);
+      onAction(action);
     }
   });
 

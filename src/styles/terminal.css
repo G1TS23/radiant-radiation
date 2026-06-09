@@ -7,7 +7,7 @@
   --panel: #0f1411;
   --line: #243029; /* grid gaps / borders */
   --fg: #d2e6d6;
-  --dim: #5f7166;
+  --dim: #7a8c81; /* ~5.5:1 on --bg (WCAG AA) */
   --accent: #57f08a; /* solved text / borders */
   --cursor: #6dff9e; /* cursor frame (bright on dark) */
   --hint: #ffd166; /* recommended move */
@@ -15,8 +15,7 @@
   --cell-off: #e8ece8; /* "white" cell */
   --cell-on: #11150f; /* "black" cell */
 
-  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo,
-    Consolas, monospace;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
 }
 
 /* soft light theme — muted sage paper, no harsh black/white */
@@ -25,11 +24,11 @@
   --panel: #e1e5da;
   --line: #c3ccbd;
   --fg: #34423a;
-  --dim: #8a978b;
-  --accent: #2f9e63;
+  --dim: #5c675f; /* ~4.9:1 on --bg (WCAG AA) */
+  --accent: #1c7245; /* deeper green: ~5:1 as text on --bg (WCAG AA) */
   --cursor: #0aa84f; /* vivid green, reads on both soft cell tones */
   --hint: #b9821f;
-  --warn: #cf5a44;
+  --warn: #b23f28; /* ~4.8:1 on --bg (WCAG AA) */
   --cell-off: #f6f7f2; /* soft white cell */
   --cell-on: #3c483f; /* soft dark cell */
 }
@@ -68,7 +67,9 @@ body {
   font-family: var(--mono);
   font-size: 15px;
   line-height: 1.5;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,7 +194,9 @@ body {
   border: 3px solid var(--cursor);
   /* bg-colored lines just outside and inside keep the frame crisp and visible
      on any cell tone, without a glow or blink */
-  box-shadow: 0 0 0 1px var(--bg), inset 0 0 0 1px var(--bg);
+  box-shadow:
+    0 0 0 1px var(--bg),
+    inset 0 0 0 1px var(--bg);
 }
 .hint-box {
   border: 3px solid var(--hint);
@@ -330,7 +333,8 @@ body {
   background: color-mix(in srgb, var(--bg) 22%, transparent);
   transform-origin: left;
   transform: scaleX(0);
-  animation: ctaload 5s linear forwards;
+  /* duration is the single JS source of truth (set as --auto-advance on .cli) */
+  animation: ctaload var(--auto-advance, 5s) linear forwards;
 }
 @keyframes ctaload {
   to {
@@ -512,7 +516,9 @@ body {
   cursor: pointer;
   background: none;
   border: 1px solid transparent;
-  transition: background-color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
 }
 /* tiny starting-board fingerprint (gapless so the pattern reads at ~32px) */
 .hist-thumb {
@@ -561,7 +567,9 @@ body {
   font-size: 0.95em;
   padding: 5px 10px;
   cursor: pointer;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 .hist-clear:hover {
   color: var(--fg);
