@@ -117,7 +117,9 @@ body {
   color: var(--dim);
   font-size: 0.85em;
 }
-/* theme + zen toggles live at the top-right, away from the game buttons */
+/* theme + zen toggles live at the top-right, away from the game buttons.
+   Kept compact so the bar's underline stays level with the keys / history
+   headers; enlarged on touch (below) for a comfortable tap target. */
 .bar-theme,
 .bar-zen {
   display: inline-flex;
@@ -127,9 +129,9 @@ body {
   border: 1px solid var(--line);
   color: var(--fg);
   font-family: var(--mono);
-  font-size: 1.1em;
+  font-size: 1em;
   line-height: 1;
-  padding: 7px 11px;
+  padding: 3px 9px;
   cursor: pointer;
 }
 .bar-theme:active,
@@ -143,10 +145,10 @@ body {
 }
 
 /* --- zen mode: fade the chrome out, keep its layout space so the grid never
-   moves or resizes; only the grid (and the toggle buttons) remain visible --- */
-.bar-title,
+   moves or resizes; the grid, the title, the moves/par HUD and the toggle
+   buttons stay visible --- */
 .bar-meta,
-.hud,
+.hud-status,
 .keys,
 .hist-spacer,
 .hist-trigger,
@@ -162,9 +164,8 @@ body {
 .layout.zen .bar {
   border-color: transparent;
 }
-.layout.zen .bar-title,
 .layout.zen .bar-meta,
-.layout.zen .hud,
+.layout.zen .hud-status,
 .layout.zen .keys,
 .layout.zen .hist-spacer,
 .layout.zen .hist-trigger,
@@ -516,9 +517,8 @@ body {
   .history,
   .hist-backdrop,
   .bar,
-  .bar-title,
   .bar-meta,
-  .hud,
+  .hud-status,
   .keys,
   .hist-spacer,
   .hist-trigger,
@@ -727,6 +727,13 @@ body {
   }
   .hist-spacer {
     display: none !important;
+  }
+  /* bigger tap targets for the bar toggles on touch (header alignment only
+     matters on desktop, where the columns sit side by side) */
+  .bar-theme,
+  .bar-zen {
+    font-size: 1.1em;
+    padding: 7px 11px;
   }
   /* history opens as a bottom sheet that slides up from the screen bottom */
   .hist-head {
