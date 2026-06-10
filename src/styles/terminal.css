@@ -237,9 +237,6 @@ body {
 .hud-moves {
   color: var(--fg);
 }
-.hud-goal {
-  color: var(--dim);
-}
 .hud-status {
   color: var(--accent);
   font-weight: 600;
@@ -420,7 +417,7 @@ body {
   font-size: 0.9em;
 }
 .keys-head {
-  margin: 0 0 8px;
+  margin: 0 0 16px; /* match the title→grid gap (the .cli flex gap) */
   font-size: 15px; /* match the title bar so the underline aligns */
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -681,6 +678,8 @@ body {
   .hist-body {
     flex: 1 1 auto;
     min-height: 0;
+    /* match the grid height: the board is min(100%, 66vh) in a 560px column */
+    max-height: min(560px, 66vh);
     overflow-y: auto;
     overscroll-behavior: contain;
   }

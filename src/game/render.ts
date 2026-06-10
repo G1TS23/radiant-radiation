@@ -35,7 +35,6 @@ export interface View {
 }
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
-const COLOR_NAME = (c: boolean): string => (c ? "black" : "white");
 
 /** Escape free text before interpolating into innerHTML (text or attribute). */
 const ESC: Record<string, string> = {
@@ -76,7 +75,6 @@ function ensureSkeleton(root: HTMLElement): void {
     <div class="hud">
       <span class="hud-moves">moves: 000</span>
       <span class="hud-par"></span>
-      <span class="hud-goal"></span>
       <span class="hud-status"></span>
     </div>
     <div class="message-row">
@@ -86,7 +84,7 @@ function ensureSkeleton(root: HTMLElement): void {
     <nav class="toolbar" aria-label="controls">
       <button data-action="undo">undo</button>
       <button data-action="reset">reset</button>
-      <button class="free-only" data-action="new">new</button>
+      <button class="free-only" data-action="new">new game</button>
       <button class="free-only" data-action="diff">difficulty</button>
       <button class="tut-only" data-action="skip">skip</button>
     </nav>
@@ -122,58 +120,48 @@ function placeOverlay(box: HTMLElement | null, v: Vertex | null | undefined): vo
   box.style.gridRow = `${v.j + 1} / span 2`;
 }
 
-/** Render the full UI for the given state. Safe to call on every change. */
-export function render(root: HTMLElement, state: GameState, view: View): void {
-  ensureSkeleton(root);
-
-  const board = root.querySelector<HTMLElement>(".board")!;
-  const grid = root.querySelector<HTMLElement>(".grid")!;
-  const overlay = root.querySelector<HTMLElement>(".overlay")!;
-
-  if (grid.children.length !== state.N * state.N) buildCells(board, grid, state.N);
-
-  // Cell colors + flash on the just-flipped 2x2.
-  const f = view.flash ?? null;
-  for (let y = 0; y < state.N; y++) {
-    for (let x = 0; x < state.N; x++) {
-      const i = index(state.N, x, y);
+// Helpers extracted from `render` to reduce cognitive complexity.
+function updateCells(grid: HTMLElement, N: number, cellsArr: boolean[], flash: Vertex | null): void {
+  const f = flash ?? null;
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const i = index(N, x, y);
       const cell = grid.children[i] as HTMLElement;
-      cell.classList.toggle("on", state.cells[i]);
+      cell.classList.toggle("on", cellsArr[i]);
       const inFlash = !!f && (x === f.i || x === f.i + 1) && (y === f.j || y === f.j + 1);
       cell.classList.toggle("flash", inFlash);
     }
   }
+}
 
-  // Cursor + hint frames (in the overlay layer).
-  placeOverlay(overlay.querySelector<HTMLElement>(".cursor-box"), state.cursor);
-  placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), view.hint ?? null);
+function updateOverlays(overlay: HTMLElement, cursor: Vertex, hint: Vertex | null | undefined): void {
+  placeOverlay(overlay.querySelector<HTMLElement>(".cursor-box"), cursor);
+  placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), hint ?? null);
+}
 
-  // Title bar meta: difficulty + size, or tutorial progress.
+function updateBarMeta(root: HTMLElement, state: GameState, view: View): void {
   const size = `${state.N}×${state.N}`;
-  const meta =
-    view.mode === "tutorial" && view.step
-      ? `tutorial ${view.step.current}/${view.step.total}`
-      : view.difficulty
-        ? `${view.difficulty} · ${size}`
-        : size;
+  let meta: string;
+  if (view.mode === "tutorial" && view.step) {
+    meta = `tutorial ${view.step.current}/${view.step.total}`;
+  } else if (view.difficulty) {
+    meta = `${view.difficulty} · ${size}`;
+  } else {
+    meta = size;
+  }
   root.querySelector(".bar-meta")!.textContent = meta;
+}
 
-  // HUD: moves (with limit), par, goal.
+function updateHUD(root: HTMLElement, state: GameState): void {
   root.querySelector(".hud-moves")!.textContent =
-    `moves: ${PAD(state.moves)}` + (state.limit !== null ? ` / ${PAD(state.limit)}` : "");
-  root.querySelector(".hud-par")!.textContent = state.par !== null ? `par: ${PAD(state.par)}` : "";
-  root.querySelector(".hud-goal")!.textContent =
-    state.targetColor === null
-      ? "goal: single color"
-      : `goal: all ${COLOR_NAME(state.targetColor)}`;
+    `moves: ${PAD(state.moves)}` + (state.limit === null ? "" : ` / ${PAD(state.limit)}`);
+  root.querySelector(".hud-par")!.textContent = state.par === null ? "" : `par: ${PAD(state.par)}`;
+}
 
-  // Status: win or out of moves.
+function updateStatusAndClasses(root: HTMLElement, state: GameState, grid: HTMLElement, tutorial: boolean): void {
   const won = isWin(state);
   const lost = isLost(state);
 
-  // On a win, give each cell a wave delay based on its distance from the last
-  // move (the centre of the cursor's 2x2) so the victory animation radiates out
-  // from where the player solved it (see .cli.won .cell in the CSS).
   if (won) {
     const ox = state.cursor.i + 0.5;
     const oy = state.cursor.j + 0.5;
@@ -184,28 +172,35 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
       }
     }
   }
-  const status = won ? ">> solved" : lost ? ">> out of moves" : "";
+
+  let status = "";
+  if (won) status = ">> solved";
+  else if (lost) status = ">> out of moves";
+
   root.querySelector(".hud-status")!.textContent = status;
-  const tutorial = view.mode === "tutorial";
   root.classList.toggle("won", won);
   root.classList.toggle("lost", lost);
   root.classList.toggle("tutorial", tutorial);
   // Mirror onto the layout so the (sibling) history panel can hide in tutorial.
   root.parentElement?.classList.toggle("tutorial", tutorial);
+}
 
-  // Tutorial text block above the grid.
+// ...existing code...
+
+function updateTutorialAndMessage(root: HTMLElement, view: View): void {
+  const tutorial = view.mode === "tutorial";
   root.querySelector(".tut-title")!.textContent = view.title ?? "";
   root.querySelector(".tut-body")!.textContent = tutorial ? (view.message ?? "") : "";
-
-  // Message / instruction line (below the grid; hidden in tutorial via CSS).
   root.querySelector(".message")!.textContent = view.message ?? "";
+}
 
-  // Toolbar difficulty button label.
+function updateToolbarDiff(root: HTMLElement, view: View): void {
   root.querySelector('[data-action="diff"]')!.textContent = view.difficulty
     ? `diff: ${view.difficulty}`
     : "difficulty";
+}
 
-  // Contextual CTA button (next / retry / continue).
+function updateCTA(root: HTMLElement, view: View): void {
   const cta = root.querySelector<HTMLButtonElement>(".cta")!;
   if (view.cta) {
     cta.textContent = view.cta.label;
@@ -213,9 +208,42 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
     cta.classList.add("show");
     cta.classList.toggle("loading", !!view.cta.loading);
   } else {
-    cta.classList.remove("show");
-    cta.classList.remove("loading");
+    cta.classList.remove("show", "loading");
   }
+}
+
+/** Render the full UI for the given state. Safe to call on every change. */
+export function render(root: HTMLElement, state: GameState, view: View): void {
+  ensureSkeleton(root);
+
+  const board = root.querySelector<HTMLElement>(".board")!;
+  const grid = root.querySelector<HTMLElement>(".grid")!;
+  const overlay = root.querySelector<HTMLElement>(".overlay")!;
+
+  if (grid.children.length !== state.N * state.N) buildCells(board, grid, state.N);
+
+  // Cells + flash
+  updateCells(grid, state.N, state.cells, view.flash ?? null);
+
+  // Cursor + hint overlays
+  updateOverlays(overlay, state.cursor, view.hint ?? null);
+
+  // Title bar meta and HUD
+  updateBarMeta(root, state, view);
+  updateHUD(root, state);
+
+  // Status, classes and win animation delays
+  const tutorial = view.mode === "tutorial";
+  updateStatusAndClasses(root, state, grid, tutorial);
+
+  // Tutorial text + message line
+  updateTutorialAndMessage(root, view);
+
+  // Toolbar difficulty label
+  updateToolbarDiff(root, view);
+
+  // Contextual CTA
+  updateCTA(root, view);
 }
 
 /**
