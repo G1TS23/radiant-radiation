@@ -40,10 +40,6 @@ export function computeView(session: Session, flash: Vertex | null): View {
       step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
       title: step.title,
       message: won ? step.successText : step.instruction,
-      goal: {
-        dark: step.targetColor ?? true,
-        label: step.targetColor === true ? "all black" : "one color",
-      },
       hint: tutorialExpected(session),
       flash,
       cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,

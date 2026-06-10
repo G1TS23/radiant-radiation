@@ -268,21 +268,6 @@ body {
   color: var(--fg);
   line-height: 1.6;
 }
-.tut-goal {
-  margin: 10px 0 0;
-  color: var(--dim);
-}
-.tut-goal-swatch {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
-  background: var(--cell-off);
-  border: 1px solid var(--line);
-}
-.tut-goal-swatch.on {
-  background: var(--cell-on);
-}
 .tut-keys {
   margin: 10px 0 0;
   color: var(--dim);
@@ -304,14 +289,14 @@ body {
 }
 /* strip the game chrome during the tutorial */
 .cli.tutorial .hud,
-.cli.tutorial .keys,
 .cli.tutorial .toolbar,
 .cli.tutorial .message,
 .cli.tutorial .bar-theme {
   display: none;
 }
 .layout.tutorial .history,
-.layout.tutorial .hist-spacer {
+.layout.tutorial .hist-spacer,
+.layout.tutorial .keys {
   display: none !important;
 }
 
@@ -407,43 +392,49 @@ body {
   display: none;
 }
 
-/* --- key hints --- */
+/* --- keyboard shortcuts: a simple list to the left of the board (desktop) --- */
 .keys {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-  color: var(--fg);
-  font-size: 0.85em;
+  display: none; /* shown on desktop (fine pointer) only — see the media query */
+  width: 230px;
+  flex: 0 0 auto;
+  font-size: 0.9em;
 }
-.keys-label {
+.keys-head {
+  margin: 0 0 8px;
+  font-size: 15px; /* match the title bar so the underline aligns */
   color: var(--accent);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-size: 0.85em;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+.keys-head::before {
+  content: "> ";
+  color: var(--dim);
+}
+.keys ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.keys li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--dim);
 }
 /* shortcut keys rendered as key caps so they read as keyboard controls */
 .keys kbd {
+  flex: 0 0 auto;
   font-family: var(--mono);
   font-size: 0.92em;
   color: var(--fg);
   background: var(--panel);
   border: 1px solid var(--line);
   border-bottom-width: 2px;
-  padding: 1px 5px;
-}
-
-/* context-sensitive key hints: size in free play, skip in tutorial */
-.cli .keys-tut {
-  display: none;
-}
-.cli.tutorial .keys-tut {
-  display: inline;
-}
-.cli.tutorial .keys-free {
-  display: none;
+  padding: 1px 6px;
 }
 
 /* --- end states --- */
@@ -495,15 +486,14 @@ body {
 }
 
 /* --- history panel --- */
-/* Hidden until the first finished game; the left spacer mirrors the panel
-   width so the board stays centered on the page when the panel is shown. */
+/* Right side: the history (after the first finished game) or a spacer that
+   mirrors the left keys list so the board stays centered. */
 .hist-spacer,
 .history {
   display: none;
   width: 230px;
   flex: 0 0 auto;
 }
-.layout.has-history .hist-spacer,
 .layout.has-history .history {
   display: block;
 }
@@ -646,6 +636,14 @@ body {
 @media (hover: hover) and (pointer: fine) {
   body {
     overflow: hidden;
+  }
+  /* keyboard shortcuts list on the left; a spacer balances it on the right
+     until the history panel appears (keeping the board centered) */
+  .layout:not(.tutorial) .keys {
+    display: block;
+  }
+  .layout:not(.tutorial):not(.has-history) .hist-spacer {
+    display: block;
   }
   .layout.has-history .history {
     display: flex;

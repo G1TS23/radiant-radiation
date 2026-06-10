@@ -22,8 +22,6 @@ export interface View {
   difficulty?: string | null;
   /** Tutorial heading shown above the grid. */
   title?: string | null;
-  /** Tutorial goal: a swatch of the target color + a label (tangible goal). */
-  goal?: { dark: boolean; label: string } | null;
   /** Instruction / status line (tutorial prompt, or a free-play hint). */
   message?: string;
   /** Recommended move to highlight, if any. */
@@ -65,7 +63,6 @@ function ensureSkeleton(root: HTMLElement): void {
     <section class="tut-text">
       <p class="tut-title"></p>
       <p class="tut-body"></p>
-      <p class="tut-goal"></p>
       <p class="tut-keys">tip: tap a square — or use arrow keys + space</p>
       <button class="tut-skip" data-action="skip">skip tutorial →</button>
     </section>
@@ -93,17 +90,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <button class="free-only" data-action="diff">difficulty</button>
       <button class="tut-only" data-action="skip">skip</button>
     </nav>
-    <footer class="keys">
-      <span class="keys-label">keys</span>
-      <span><kbd>↑↓←→</kbd> move</span>
-      <span><kbd>space</kbd> flip</span>
-      <span><kbd>z</kbd> / right-click undo</span>
-      <span><kbd>r</kbd> reset</span>
-      <span class="keys-free"><kbd>n</kbd> new</span>
-      <span class="keys-free"><kbd>d</kbd> difficulty</span>
-      <span><kbd>t</kbd> theme</span>
-      <span class="keys-tut"><kbd>s</kbd> skip</span>
-    </footer>`;
+    `;
 }
 
 /** Rebuild the cell nodes when the grid size changes. */
@@ -208,10 +195,6 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   // Tutorial text block above the grid.
   root.querySelector(".tut-title")!.textContent = view.title ?? "";
   root.querySelector(".tut-body")!.textContent = tutorial ? (view.message ?? "") : "";
-  const goalEl = root.querySelector<HTMLElement>(".tut-goal")!;
-  goalEl.innerHTML = view.goal
-    ? `goal: <span class="tut-goal-swatch${view.goal.dark ? " on" : ""}"></span> ${esc(view.goal.label)}`
-    : "";
 
   // Message / instruction line (below the grid; hidden in tutorial via CSS).
   root.querySelector(".message")!.textContent = view.message ?? "";
