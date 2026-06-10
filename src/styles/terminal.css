@@ -121,7 +121,8 @@ body {
    Kept compact so the bar's underline stays level with the keys / history
    headers; enlarged on touch (below) for a comfortable tap target. */
 .bar-theme,
-.bar-zen {
+.bar-zen,
+.bar-lang {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -134,8 +135,14 @@ body {
   padding: 3px 9px;
   cursor: pointer;
 }
+.bar-lang {
+  font-size: 0.8em;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
 .bar-theme:active,
-.bar-zen:active {
+.bar-zen:active,
+.bar-lang:active {
   background: var(--panel);
 }
 /* the zen toggle stays visible in zen — it (with Esc) is the way back out */
@@ -174,6 +181,62 @@ body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+/* --- language picker (first visit + the bar's language button) --- */
+.lang-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(2px);
+}
+.lang-screen[hidden] {
+  display: none;
+}
+.lang-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(86vw, 320px);
+  padding: 28px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.lang-prompt {
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.lang-prompt::before {
+  content: "> ";
+  color: var(--dim);
+}
+.lang-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lang-opt {
+  font-family: var(--mono);
+  font-size: 1em;
+  text-align: left;
+  color: var(--fg);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+.lang-opt:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* --- board + grid --- */
@@ -734,6 +797,9 @@ body {
   .bar-zen {
     font-size: 1.1em;
     padding: 7px 11px;
+  }
+  .bar-lang {
+    padding: 8px 10px;
   }
   /* history opens as a bottom sheet that slides up from the screen bottom */
   .hist-head {

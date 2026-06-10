@@ -6,16 +6,16 @@ import "../styles/terminal.css";
 <Layout title="radiant-radiation">
   <div class="layout">
     <aside class="keys" aria-label="keyboard shortcuts">
-      <p class="keys-head">keys</p>
+      <p class="keys-head" data-i18n="keys.title">keys</p>
       <ul>
-        <li><kbd>↑↓←→</kbd> move</li>
-        <li><kbd>space</kbd> flip</li>
-        <li><kbd>z</kbd> undo</li>
-        <li><kbd>r</kbd> reset</li>
-        <li><kbd>n</kbd> new game</li>
-        <li><kbd>d</kbd> difficulty</li>
-        <li><kbd>t</kbd> theme</li>
-        <li><kbd>esc</kbd> zen mode</li>
+        <li><kbd>↑↓←→</kbd> <span data-i18n="action.move">move</span></li>
+        <li><kbd>space</kbd> <span data-i18n="action.flip">flip</span></li>
+        <li><kbd>z</kbd> <span data-i18n="action.undo">undo</span></li>
+        <li><kbd>r</kbd> <span data-i18n="action.reset">reset</span></li>
+        <li><kbd>n</kbd> <span data-i18n="action.new">new game</span></li>
+        <li><kbd>d</kbd> <span data-i18n="action.difficulty">difficulty</span></li>
+        <li><kbd>t</kbd> <span data-i18n="action.theme">theme</span></li>
+        <li><kbd>esc</kbd> <span data-i18n="action.zen">zen mode</span></li>
       </ul>
     </aside>
     <main id="game" class="cli" aria-label="radiant-radiation puzzle"></main>
@@ -23,6 +23,7 @@ import "../styles/terminal.css";
     <aside id="history" class="history" aria-label="game history"></aside>
     <div class="hist-backdrop" aria-hidden="true"></div>
   </div>
+  <div id="lang-screen" class="lang-screen" role="dialog" aria-modal="true" hidden></div>
 </Layout>
 
 <script>

@@ -12,7 +12,8 @@
  * so clicks fall through to the cells (mouse wiring lives in input.ts).
  */
 
-import { index, isWin, isLost, type GameState, type Vertex } from "./engine";
+import { index, isWin, isLost, DIFFICULTIES, type GameState, type Vertex } from "./engine";
+import { t, getLocale } from "./i18n";
 import type { GameRecord } from "./history";
 
 export interface View {
@@ -56,15 +57,16 @@ function ensureSkeleton(root: HTMLElement): void {
       <span class="bar-title">radiant-radiation</span>
       <span class="bar-right">
         <span class="bar-meta"></span>
-        <button class="bar-theme" data-action="theme" aria-label="toggle theme">◐</button>
-        <button class="bar-zen" data-action="zen" aria-label="toggle zen mode" title="zen mode (esc)">⛶</button>
+        <button class="bar-lang" data-action="lang" data-i18n-aria="aria.lang">EN</button>
+        <button class="bar-theme" data-action="theme" data-i18n-aria="aria.theme">◐</button>
+        <button class="bar-zen" data-action="zen" data-i18n-aria="aria.zen" data-i18n-title="title.zen">⛶</button>
       </span>
     </header>
     <section class="tut-text">
       <p class="tut-title"></p>
       <p class="tut-body"></p>
-      <p class="tut-keys">tip: tap a square — or use arrow keys + space</p>
-      <button class="tut-skip" data-action="skip">skip tutorial →</button>
+      <p class="tut-keys" data-i18n="tut.tip"></p>
+      <button class="tut-skip" data-action="skip" data-i18n="tut.skip"></button>
     </section>
     <div class="board">
       <div class="grid" role="grid" aria-label="puzzle grid"></div>
@@ -75,18 +77,18 @@ function ensureSkeleton(root: HTMLElement): void {
       <button class="cta" data-action="next"></button>
     </div>
     <div class="hud">
-      <span class="hud-moves">moves: 000</span>
+      <span class="hud-moves"></span>
       <span class="hud-par"></span>
       <span class="hud-status"></span>
     </div>
     <nav class="toolbar" aria-label="controls">
-      <button data-action="undo">undo</button>
-      <button data-action="reset">reset</button>
-      <button class="free-only" data-action="new">new game</button>
-      <button class="free-only" data-action="diff">difficulty</button>
-      <button class="tut-only" data-action="skip">skip</button>
+      <button data-action="undo" data-i18n="action.undo"></button>
+      <button data-action="reset" data-i18n="action.reset"></button>
+      <button class="free-only" data-action="new" data-i18n="action.new"></button>
+      <button class="free-only" data-action="diff"></button>
+      <button class="tut-only" data-action="skip" data-i18n="action.skip"></button>
     </nav>
-    <button class="hist-trigger" data-action="hist">history</button>
+    <button class="hist-trigger" data-action="hist" data-i18n="action.history"></button>
     `;
 }
 
@@ -150,19 +152,22 @@ function updateBarMeta(root: HTMLElement, state: GameState, view: View): void {
   const size = `${state.N}×${state.N}`;
   let meta: string;
   if (view.mode === "tutorial" && view.step) {
-    meta = `tutorial ${view.step.current}/${view.step.total}`;
+    meta = t("bar.tutorial", { current: view.step.current, total: view.step.total });
   } else if (view.difficulty) {
     meta = `${view.difficulty} · ${size}`;
   } else {
     meta = size;
   }
   root.querySelector(".bar-meta")!.textContent = meta;
+  root.querySelector(".bar-lang")!.textContent = getLocale().toUpperCase();
 }
 
 function updateHUD(root: HTMLElement, state: GameState): void {
   root.querySelector(".hud-moves")!.textContent =
-    `moves: ${PAD(state.moves)}` + (state.limit === null ? "" : ` / ${PAD(state.limit)}`);
-  root.querySelector(".hud-par")!.textContent = state.par === null ? "" : `par: ${PAD(state.par)}`;
+    `${t("hud.moves")} ${PAD(state.moves)}` +
+    (state.limit === null ? "" : ` / ${PAD(state.limit)}`);
+  root.querySelector(".hud-par")!.textContent =
+    state.par === null ? "" : `${t("hud.par")} ${PAD(state.par)}`;
 }
 
 function updateStatusAndClasses(
@@ -186,8 +191,8 @@ function updateStatusAndClasses(
   }
 
   let status = "";
-  if (won) status = ">> solved";
-  else if (lost) status = ">> out of moves";
+  if (won) status = t("status.solved");
+  else if (lost) status = t("status.lost");
 
   root.querySelector(".hud-status")!.textContent = status;
   root.classList.toggle("won", won);
@@ -205,8 +210,8 @@ function updateTutorialAndMessage(root: HTMLElement, view: View): void {
 
 function updateToolbarDiff(root: HTMLElement, view: View): void {
   root.querySelector('[data-action="diff"]')!.textContent = view.difficulty
-    ? `diff: ${view.difficulty}`
-    : "difficulty";
+    ? t("toolbar.diff", { label: view.difficulty })
+    : t("action.difficulty");
 }
 
 function updateCTA(root: HTMLElement, view: View): void {
@@ -262,23 +267,33 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
  */
 export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
   const head =
-    `<button class="hist-head" type="button" aria-label="history (toggle)">` +
-    `history<span class="hist-chevron" aria-hidden="true"></span></button>`;
+    `<button class="hist-head" type="button" aria-label="${esc(t("aria.history"))}">` +
+    `${esc(t("action.history"))}<span class="hist-chevron" aria-hidden="true"></span></button>`;
 
   if (entries.length === 0) {
-    panel.innerHTML = head + `<div class="hist-body"><p class="hist-empty">no games yet</p></div>`;
+    panel.innerHTML =
+      head + `<div class="hist-body"><p class="hist-empty">${esc(t("history.empty"))}</p></div>`;
     return;
   }
 
   const rows = entries
     .map((e, i) => {
       const icon = e.result === "won" ? "✓" : "✗";
-      const diff = esc(e.diffLabel);
+      // Render the difficulty from its stored index, so old games re-localize.
+      const id = DIFFICULTIES[e.diff]?.id ?? "normal";
+      const diff = esc(t("difficulty." + id));
       const thumb =
         `<span class="hist-thumb" style="--n:${Number(e.N)}" aria-hidden="true">` +
         e.cells.map((c) => `<i${c ? ' class="on"' : ""}></i>`).join("") +
         `</span>`;
-      const label = `replay ${diff} game, ${e.result} in ${Number(e.moves)} of ${Number(e.limit)} moves`;
+      const label = esc(
+        t("aria.replay", {
+          diff: t("difficulty." + id),
+          result: t("result." + e.result),
+          moves: Number(e.moves),
+          limit: Number(e.limit),
+        }),
+      );
       return (
         `<li>` +
         `<button class="hist-row ${e.result}" type="button" data-index="${i}" aria-label="${label}">` +
@@ -295,5 +310,5 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
   panel.innerHTML =
     head +
     `<div class="hist-body"><ul class="hist-list">${rows}</ul></div>` +
-    `<button class="hist-clear">clear history</button>`;
+    `<button class="hist-clear">${esc(t("history.clear"))}</button>`;
 }

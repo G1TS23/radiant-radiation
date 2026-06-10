@@ -45,17 +45,17 @@ function step(
 export const TUTORIAL_STEPS: TutorialStep[] = [
   step("one-move", ["##.", "##.", "..."], {
     targetColor: null, // any single color wins
-    title: "one move",
-    instruction: "Tap the glowing 2x2 block. One flip can make the whole grid one color.",
-    successText: "solved — one 2x2 flip changes four cells at once.",
+    title: "tut.one.title", // i18n keys (resolved with t() where displayed)
+    instruction: "tut.one.instruction",
+    successText: "tut.one.success",
     guided: true,
     solution: [{ i: 0, j: 0 }],
   }),
   step("two-moves", ["##.", "#.#", ".##"], {
     targetColor: null,
-    title: "two moves",
-    instruction: "Now follow two glowing blocks. Notice how the second flip overlaps the first.",
-    successText: "solved — overlapping flips are the core of the puzzle.",
+    title: "tut.two.title",
+    instruction: "tut.two.instruction",
+    successText: "tut.two.success",
     guided: true,
     solution: [
       { i: 0, j: 0 },
@@ -64,9 +64,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   }),
   step("three-moves", ["#.#", ".##", "##."], {
     targetColor: null,
-    title: "your turn",
-    instruction: "Solve this one without hints. There is no move limit in the tutorial.",
-    successText: "solved — every cell is one color. you're ready.",
+    title: "tut.three.title",
+    instruction: "tut.three.instruction",
+    successText: "tut.three.success",
     guided: false,
     solution: [
       { i: 0, j: 0 },

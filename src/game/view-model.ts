@@ -6,6 +6,7 @@
 
 import { DIFFICULTIES, isWin, isOver, type GameState, type Vertex } from "./engine";
 import { TUTORIAL_STEPS } from "./tutorial";
+import { t } from "./i18n";
 import type { View } from "./render";
 
 export type Mode = "tutorial" | "free";
@@ -40,23 +41,23 @@ export function computeView(session: Session, flash: Vertex | null): View {
       mode: "tutorial",
       difficulty: null,
       step: { current: session.stepIndex + 1, total: TUTORIAL_STEPS.length },
-      title: step.title,
-      message: won ? step.successText : step.instruction,
+      title: t(step.title),
+      message: t(won ? step.successText : step.instruction),
       hint: tutorialExpected(session),
       flash,
-      cta: won ? { label: isLast ? "start playing ▶" : "continue ▶", action: "next" } : null,
+      cta: won ? { label: t(isLast ? "cta.start" : "cta.continue"), action: "next" } : null,
     };
   }
 
   // The status (">> solved" / ">> out of moves") shows in the HUD; the only
   // contextual free-play UI here is the button centred over the board.
   let cta: View["cta"] = null;
-  if (won) cta = { label: "next puzzle ▶", action: "next", loading: true };
-  else if (isOver(s)) cta = { label: "retry ↻", action: "reset" };
+  if (won) cta = { label: t("cta.next"), action: "next", loading: true };
+  else if (isOver(s)) cta = { label: t("cta.retry"), action: "reset" };
 
   return {
     mode: "free",
-    difficulty: DIFFICULTIES[session.diff].label,
+    difficulty: t("difficulty." + DIFFICULTIES[session.diff].id),
     message: "",
     hint: null,
     flash,

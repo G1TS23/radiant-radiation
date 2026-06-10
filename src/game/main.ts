@@ -35,6 +35,18 @@ import {
 } from "./history";
 import { getItem as readStorage, setItem as writeStorage } from "./storage";
 import { computeView, tutorialExpected, type Session } from "./view-model";
+import {
+  setLocale,
+  chooseLocale,
+  detectLocale,
+  getLocale,
+  hasChosenLocale,
+  isLocale,
+  localizeStatic,
+  t,
+  tn,
+  LOCALES,
+} from "./i18n";
 
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
 const DIFFICULTY_KEY = "rr.difficulty";
@@ -103,7 +115,7 @@ function startFree(diff: number): void {
   };
   writeStorage(DIFFICULTY_KEY, String(diff));
   draw();
-  announce(`new ${d.label} puzzle, ${d.N} by ${d.N}`);
+  announce(t("announce.new", { diff: t("difficulty." + d.id), n: d.N }));
 }
 
 function startTutorial(index: number): void {
@@ -120,7 +132,7 @@ function startTutorial(index: number): void {
     replay: false,
   };
   draw();
-  announce(`${step.title}. ${step.instruction}`);
+  announce(`${t(step.title)}. ${t(step.instruction)}`);
 }
 
 /** Move on once the round is finished (won, lost, or skipped). */
@@ -167,7 +179,7 @@ function replayRecord(rec: GameRecord): void {
     replay: true,
   };
   draw();
-  announce(`replaying ${DIFFICULTIES[rec.diff].label} puzzle, ${rec.N} by ${rec.N}`);
+  announce(t("announce.replay", { diff: t("difficulty." + DIFFICULTIES[rec.diff].id), n: rec.N }));
 }
 
 /** Record the just-finished free-play game into the history panel. */
@@ -226,10 +238,10 @@ function doMove(): void {
   const black = s.cells.filter(Boolean).length;
   announce(
     isWin(s)
-      ? `solved in ${s.moves} move${s.moves === 1 ? "" : "s"}`
+      ? tn("announce.solved", s.moves)
       : isLost(s)
-        ? "out of moves"
-        : `${black} black, ${s.cells.length - black} white`,
+        ? t("announce.lost")
+        : t("announce.count", { black, white: s.cells.length - black }),
   );
   if (flashTimer !== undefined) clearTimeout(flashTimer);
   flashTimer = window.setTimeout(() => {
@@ -244,7 +256,7 @@ const handlers: InputHandlers = {
     session.state = moveCursor(session.state, di, dj);
     draw();
     const { i, j } = session.state.cursor;
-    announce(`cursor row ${j + 1}, column ${i + 1}`);
+    announce(t("announce.cursor", { row: j + 1, col: i + 1 }));
   },
   commit() {
     if (isOver(session.state)) {
@@ -370,8 +382,46 @@ function toggleZen(): void {
   applyZen();
 }
 
+// --- language ---------------------------------------------------------------
+
+/** Show the language picker (first visit, and the bar's language button). */
+function openLangPicker(): void {
+  const screen = document.getElementById("lang-screen");
+  if (!screen) return;
+  const opts = LOCALES.map(
+    (l) => `<button class="lang-opt" type="button" data-lang="${l.code}">${l.name}</button>`,
+  ).join("");
+  screen.innerHTML =
+    `<div class="lang-card"><p class="lang-prompt">${t("lang.prompt")}</p>` +
+    `<div class="lang-options">${opts}</div></div>`;
+  screen.hidden = false;
+}
+
+/** Apply a chosen language: persist, relabel everything, hide the picker. */
+function chooseLanguage(code: string): void {
+  if (!isLocale(code)) return;
+  chooseLocale(code);
+  document.documentElement.lang = code;
+  localizeStatic();
+  draw();
+  drawHistory();
+  const screen = document.getElementById("lang-screen");
+  if (screen) screen.hidden = true;
+}
+
 /** On-screen control actions (data-action values). */
-const ACTIONS = ["undo", "reset", "new", "diff", "theme", "hist", "zen", "skip", "next"] as const;
+const ACTIONS = [
+  "undo",
+  "reset",
+  "new",
+  "diff",
+  "theme",
+  "hist",
+  "zen",
+  "lang",
+  "skip",
+  "next",
+] as const;
 type Action = (typeof ACTIONS)[number];
 const isAction = (s: string): s is Action => (ACTIONS as readonly string[]).includes(s);
 
@@ -399,6 +449,9 @@ function onAction(action: Action): void {
     case "zen":
       toggleZen();
       break;
+    case "lang":
+      openLangPicker();
+      break;
     case "skip":
       handlers.skip();
       break;
@@ -419,6 +472,16 @@ function boot(): void {
   root.style.setProperty("--auto-advance", `${AUTO_ADVANCE_MS}ms`);
 
   zenOn = readStorage(ZEN_KEY) === "1";
+
+  // Apply the stored/auto-detected language before the first render.
+  setLocale(detectLocale());
+  document.documentElement.lang = getLocale();
+
+  // Language picker (first visit + the bar's language button) — pick a language.
+  document.getElementById("lang-screen")?.addEventListener("click", (e) => {
+    const code = (e.target as HTMLElement).closest<HTMLElement>("[data-lang]")?.dataset.lang;
+    if (code) chooseLanguage(code);
+  });
 
   attachInput(root, handlers);
 
@@ -454,6 +517,13 @@ function boot(): void {
     if (row?.dataset.index) replayRecord(historyEntries[Number(row.dataset.index)]);
   });
 
+  startInitialGame();
+  localizeStatic(); // localize the now-built skeleton + the static keys list
+  if (!hasChosenLocale()) openLangPicker(); // first visit: ask for a language
+}
+
+/** Pick the first screen: deep link, then tutorial, then resume / fresh game. */
+function startInitialGame(): void {
   // Deep link: ?d=hard starts free play directly at that difficulty.
   const dParam = new URLSearchParams(location.search).get("d");
   if (dParam !== null) {
@@ -461,12 +531,10 @@ function boot(): void {
     startFree(idx >= 0 ? idx : DEFAULT_DIFFICULTY);
     return;
   }
-
   if (!tutorialDone()) {
     startTutorial(0);
     return;
   }
-
   // Resume an in-progress game if one was autosaved, else start fresh.
   const saved = loadGame();
   if (saved) restoreGame(saved);
