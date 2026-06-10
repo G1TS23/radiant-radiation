@@ -48,11 +48,11 @@ export function computeView(session: Session, flash: Vertex | null): View {
     };
   }
 
-  // The status (">> solved" / ">> out of moves") already shows in the HUD, so the
-  // message line stays empty here — only the action button appears next to it.
+  // The status (">> solved" / ">> out of moves") shows in the HUD; the only
+  // contextual free-play UI here is the button centred over the board.
   let cta: View["cta"] = null;
   if (won) cta = { label: "next puzzle ▶", action: "next", loading: true };
-  else if (isOver(s)) cta = { label: "retry ▶", action: "reset" };
+  else if (isOver(s)) cta = { label: "retry ↻", action: "reset" };
 
   return {
     mode: "free",

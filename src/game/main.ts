@@ -253,10 +253,8 @@ const handlers: InputHandlers = {
     doMove();
   },
   tapVertex(i, j, cx, cy) {
-    if (isOver(session.state)) {
-      advance();
-      return;
-    }
+    // Game over: the grid is inert — only the CTA button advances / retries.
+    if (isOver(session.state)) return;
     // Tutorial: forgive aim — any tap inside the highlighted 2x2 snaps to the
     // expected move, so a tap on a corner cell isn't silently rejected.
     if (session.mode === "tutorial") {

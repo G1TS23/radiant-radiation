@@ -71,15 +71,12 @@ function ensureSkeleton(root: HTMLElement): void {
         <div class="cursor-box"></div>
         <div class="hint-box"></div>
       </div>
+      <button class="cta" data-action="next"></button>
     </div>
     <div class="hud">
       <span class="hud-moves">moves: 000</span>
       <span class="hud-par"></span>
       <span class="hud-status"></span>
-    </div>
-    <div class="message-row">
-      <p class="message"></p>
-      <button class="cta" data-action="next"></button>
     </div>
     <nav class="toolbar" aria-label="controls">
       <button data-action="undo">undo</button>
@@ -203,7 +200,6 @@ function updateTutorialAndMessage(root: HTMLElement, view: View): void {
   const tutorial = view.mode === "tutorial";
   root.querySelector(".tut-title")!.textContent = view.title ?? "";
   root.querySelector(".tut-body")!.textContent = tutorial ? (view.message ?? "") : "";
-  root.querySelector(".message")!.textContent = view.message ?? "";
 }
 
 function updateToolbarDiff(root: HTMLElement, view: View): void {

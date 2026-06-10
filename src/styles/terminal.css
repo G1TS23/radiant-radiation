@@ -287,7 +287,6 @@ body {
 /* strip the game chrome during the tutorial */
 .cli.tutorial .hud,
 .cli.tutorial .toolbar,
-.cli.tutorial .message,
 .cli.tutorial .bar-theme {
   display: none;
 }
@@ -298,42 +297,23 @@ body {
   display: none !important;
 }
 
-/* --- message line + contextual CTA --- */
-.message-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  /* reserve the CTA's height at all times so the button appearing on win/loss
-     doesn't shift the layout below it */
-  min-height: 44px;
-}
-.message {
-  margin: 0;
-  color: var(--fg);
-}
-.message::before {
-  content: "> ";
-  color: var(--dim);
-}
-.message:empty::before {
-  content: "";
-}
-.message:empty {
-  display: none; /* don't let an empty message offset the centered CTA */
-}
+/* --- contextual CTA: a button centred over the board on win / loss --- */
 .cta {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3; /* above the cells and the cursor/hint overlay */
   overflow: hidden;
   display: none;
   font-family: var(--mono);
-  font-size: 0.95em;
+  font-size: 1em;
   color: var(--bg);
   background: var(--accent);
   border: none;
-  padding: 9px 16px;
+  padding: 12px 20px;
   cursor: pointer;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.3);
 }
 .cta.show {
   display: inline-block;
