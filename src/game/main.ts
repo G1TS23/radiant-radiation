@@ -252,17 +252,28 @@ const handlers: InputHandlers = {
     if (!moveAllowed(session.state.cursor)) return; // tutorial: must be on the hint
     doMove();
   },
-  tapVertex(i, j) {
+  tapVertex(i, j, cx, cy) {
     if (isOver(session.state)) {
       advance();
       return;
     }
-    const v = clampVertex(session.state, i, j);
-    setCursor(v);
-    if (!moveAllowed(v)) {
-      draw(); // move the cursor for feedback, but don't flip (not the hinted move)
-      return;
+    // Tutorial: forgive aim — any tap inside the highlighted 2x2 snaps to the
+    // expected move, so a tap on a corner cell isn't silently rejected.
+    if (session.mode === "tutorial") {
+      const exp = tutorialExpected(session);
+      if (exp) {
+        const inside = (cx === exp.i || cx === exp.i + 1) && (cy === exp.j || cy === exp.j + 1);
+        if (inside) {
+          setCursor(exp);
+          doMove();
+        } else {
+          setCursor(clampVertex(session.state, i, j)); // feedback only, no flip
+          draw();
+        }
+        return;
+      }
     }
+    setCursor(clampVertex(session.state, i, j));
     doMove();
   },
   pointVertex(i, j) {

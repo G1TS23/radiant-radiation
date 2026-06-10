@@ -45,18 +45,17 @@ function step(
 export const TUTORIAL_STEPS: TutorialStep[] = [
   step("brush", ["..", ".."], {
     targetColor: true, // goal: all black
-    title: "welcome to radiant-radiation",
-    instruction:
-      "the goal is to make the whole grid a single color. you paint with a 2×2 brush: tap the highlighted square and its 4 cells flip together. try it — make them all black.",
-    successText: "nice — that's the brush. flipping 4 cells at once.",
+    title: "welcome — make one color",
+    instruction: "Tap the glowing square: its 4 cells flip together. Make them all black.",
+    successText: "that's the brush — it flips 4 cells at once.",
     solution: [{ i: 0, j: 0 }],
   }),
   step("combine", ["##.", "#.#", ".##"], {
     targetColor: null, // any single color wins
-    title: "combining flips",
+    title: "combine flips",
     instruction:
-      "on bigger grids the brushes overlap, so each flip also changes its neighbors. follow the highlighted squares, in order, to clear the board to one color.",
-    successText: "solved! you've got the idea — over to you.",
+      "Flips overlap, so each one also changes its neighbours. Tap the glowing squares in order until the grid is one color.",
+    successText: "solved — the whole grid is one color. you've got it!",
     solution: [
       { i: 0, j: 0 },
       { i: 1, j: 1 },

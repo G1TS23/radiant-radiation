@@ -13,8 +13,12 @@ export interface InputHandlers {
   move(di: number, dj: number): void;
   /** Space / Enter: apply the move under the cursor (or advance when solved). */
   commit(): void;
-  /** Click/tap aiming at vertex (i, j) — applies the move there. */
-  tapVertex(i: number, j: number): void;
+  /**
+   * Click/tap aiming at vertex (i, j) — applies the move there. The tapped cell
+   * (cellX, cellY) is also reported so the tutorial can accept any tap inside the
+   * highlighted 2x2, not just a precise hit on the intersection.
+   */
+  tapVertex(i: number, j: number, cellX: number, cellY: number): void;
   /** Hover over vertex (i, j) — previews the cursor (no move). */
   pointVertex(i: number, j: number): void;
   /** R: reset the current puzzle to its starting position. */
@@ -50,7 +54,10 @@ function isControlTarget(el: EventTarget | null): boolean {
  * intersection of 4 cells — still resolves to the right vertex. Returns null for
  * points clearly outside the board. The controller clamps the result.
  */
-function vertexFromPoint(grid: HTMLElement | null, e: MouseEvent): [number, number] | null {
+function pointInfo(
+  grid: HTMLElement | null,
+  e: MouseEvent,
+): { vi: number; vj: number; cx: number; cy: number } | null {
   if (!grid) return null;
   const cells = grid.children;
   const N = Math.round(Math.sqrt(cells.length));
@@ -70,8 +77,9 @@ function vertexFromPoint(grid: HTMLElement | null, e: MouseEvent): [number, numb
 
   const fx = ((e.clientX - a.left) / (b.right - a.left)) * N; // 0..N in cell units
   const fy = ((e.clientY - a.top) / (b.bottom - a.top)) * N;
-  const clamp = (v: number): number => Math.min(N - 2, Math.max(0, Math.round(v) - 1));
-  return [clamp(fx), clamp(fy)];
+  const vertex = (v: number): number => Math.min(N - 2, Math.max(0, Math.round(v) - 1));
+  const cell = (v: number): number => Math.min(N - 1, Math.max(0, Math.floor(v)));
+  return { vi: vertex(fx), vj: vertex(fy), cx: cell(fx), cy: cell(fy) };
 }
 
 /** Attach all input listeners. Returns a detach function. */
@@ -134,8 +142,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   const gridOf = (): HTMLElement | null => root.querySelector<HTMLElement>(".grid");
 
   const onClick = (e: MouseEvent): void => {
-    const v = vertexFromPoint(gridOf(), e);
-    if (v) h.tapVertex(v[0], v[1]);
+    const p = pointInfo(gridOf(), e);
+    if (p) h.tapVertex(p.vi, p.vj, p.cx, p.cy);
   };
 
   // Right-click anywhere on the board undoes the last move (no context menu).
@@ -145,8 +153,8 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
   };
 
   const onHover = (e: MouseEvent): void => {
-    const v = vertexFromPoint(gridOf(), e);
-    if (v) h.pointVertex(v[0], v[1]);
+    const p = pointInfo(gridOf(), e);
+    if (p) h.pointVertex(p.vi, p.vj);
   };
 
   window.addEventListener("keydown", onKey);

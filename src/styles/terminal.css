@@ -199,10 +199,23 @@ body {
     inset 0 0 0 1px var(--bg);
 }
 .hint-box {
+  position: relative;
   border: 3px solid var(--hint);
   background: color-mix(in srgb, var(--hint) 20%, transparent);
   z-index: 1;
   animation: hintpulse 1.2s ease-in-out infinite;
+}
+/* dot at the centre = the intersection: "tap where the 4 cells meet" */
+.hint-box::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24%;
+  height: 24%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--hint);
 }
 @keyframes hintpulse {
   0%,
@@ -254,6 +267,26 @@ body {
   margin: 0;
   color: var(--fg);
   line-height: 1.6;
+}
+.tut-goal {
+  margin: 10px 0 0;
+  color: var(--dim);
+}
+.tut-goal-swatch {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  background: var(--cell-off);
+  border: 1px solid var(--line);
+}
+.tut-goal-swatch.on {
+  background: var(--cell-on);
+}
+.tut-keys {
+  margin: 10px 0 0;
+  color: var(--dim);
+  font-size: 0.9em;
 }
 .tut-skip {
   margin-top: 12px;
@@ -378,11 +411,28 @@ body {
 .keys {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
+  align-items: center;
+  gap: 8px 14px;
   border-top: 1px solid var(--line);
-  padding-top: 8px;
-  color: var(--dim);
-  font-size: 0.82em;
+  padding-top: 10px;
+  color: var(--fg);
+  font-size: 0.85em;
+}
+.keys-label {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+}
+/* shortcut keys rendered as key caps so they read as keyboard controls */
+.keys kbd {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  padding: 1px 5px;
 }
 
 /* context-sensitive key hints: size in free play, skip in tutorial */
