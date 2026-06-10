@@ -513,6 +513,7 @@ body {
   border-bottom: 1px solid var(--line);
   font-family: inherit;
   font-size: 15px; /* match the title bar so the underline aligns */
+  line-height: 1.5; /* a <button> defaults to normal (~1.2) — match the title */
   color: var(--accent);
   letter-spacing: 0.04em;
   padding: 0 0 8px;
