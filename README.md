@@ -35,7 +35,7 @@ history panel becomes a collapsible accordion.
 
 ## Features
 
-- Guided tutorial (2×2 → 3×3) before free play.
+- Three-step 3×3 tutorial before free play, ending with an unguided puzzle.
 - Difficulty presets (easy/normal/hard/expert) bundling size + par + slack.
 - Move limit with par comparison; auto-advance to the next puzzle after a win.
 - Games history (result, moves, difficulty, board preview) with replay, persisted

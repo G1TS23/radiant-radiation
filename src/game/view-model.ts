@@ -23,7 +23,9 @@ export interface Session {
 /** The move the tutorial expects next (highlighted + the only one accepted). */
 export function tutorialExpected(session: Session): Vertex | null {
   if (session.mode !== "tutorial" || isWin(session.state)) return null;
-  return TUTORIAL_STEPS[session.stepIndex].solution[session.state.moves] ?? null;
+  const step = TUTORIAL_STEPS[session.stepIndex];
+  if (!step.guided) return null;
+  return step.solution[session.state.moves] ?? null;
 }
 
 /** Pure mapping from the current session to the render View. */

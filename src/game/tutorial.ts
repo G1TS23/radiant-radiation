@@ -5,12 +5,10 @@
  * be precise. The engine logic is reused as-is; the tutorial only adds the idea
  * of a fixed starting board, an imposed target color, and a recommended move.
  *
- * Step 1 (2x2): there is exactly one move, and it flips all four cells. A 2x2
- *   can never be a real puzzle (every reachable board is monochrome), so this
- *   step is a pure demonstration: start all-white, goal all-black, one click.
- *
- * Step 2 (3x3): a fixed board two moves away from solved — the first real taste
- *   of combining moves. Win = any single color.
+ * The tutorial starts directly on 3x3 boards: small enough to read instantly,
+ * but large enough for overlapping 2x2 flips to matter. The first two steps are
+ * guided; the last step removes the hint and lets the player solve freely.
+ * Win = any single color.
  */
 
 import { boardFromRows, createState, type GameState, type Vertex } from "./engine";
@@ -25,10 +23,12 @@ export interface TutorialStep {
   /** Explanation shown above the grid. */
   instruction: string;
   successText: string;
+  /** Whether the current solution move should be highlighted and enforced. */
+  guided: boolean;
   /**
    * The exact move sequence that solves the step. The current move (solution
-   * [movesMade]) is highlighted, and in the tutorial only that move is accepted,
-   * so the player is guided step by step and can't get stuck.
+   * [movesMade]) is highlighted and enforced when guided = true. Unguided steps
+   * still keep a solution here so tests can validate the scripted board.
    */
   solution: Vertex[];
 }
@@ -43,22 +43,35 @@ function step(
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
-  step("brush", ["..", ".."], {
-    targetColor: true, // goal: all black
-    title: "welcome — make one color",
-    instruction: "Tap the glowing square: its 4 cells flip together. Make them all black.",
-    successText: "that's the brush — it flips 4 cells at once.",
+  step("one-move", ["##.", "##.", "..."], {
+    targetColor: null, // any single color wins
+    title: "one move",
+    instruction: "Tap the glowing 2x2 block. One flip can make the whole grid one color.",
+    successText: "solved — one 2x2 flip changes four cells at once.",
+    guided: true,
     solution: [{ i: 0, j: 0 }],
   }),
-  step("combine", ["##.", "#.#", ".##"], {
-    targetColor: null, // any single color wins
-    title: "combine flips",
-    instruction:
-      "Flips overlap, so each one also changes its neighbours. Tap the glowing squares in order until the grid is one color.",
-    successText: "solved — the whole grid is one color. you've got it!",
+  step("two-moves", ["##.", "#.#", ".##"], {
+    targetColor: null,
+    title: "two moves",
+    instruction: "Now follow two glowing blocks. Notice how the second flip overlaps the first.",
+    successText: "solved — overlapping flips are the core of the puzzle.",
+    guided: true,
     solution: [
       { i: 0, j: 0 },
       { i: 1, j: 1 },
+    ],
+  }),
+  step("three-moves", ["#.#", ".##", "##."], {
+    targetColor: null,
+    title: "your turn",
+    instruction: "Solve this one without hints. There is no move limit in the tutorial.",
+    successText: "solved — every cell is one color. you're ready.",
+    guided: false,
+    solution: [
+      { i: 0, j: 0 },
+      { i: 1, j: 0 },
+      { i: 0, j: 1 },
     ],
   }),
 ];
