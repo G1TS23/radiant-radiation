@@ -199,8 +199,6 @@ function updateStatusAndClasses(
   root.parentElement?.classList.toggle("tutorial", tutorial);
 }
 
-// ...existing code...
-
 function updateTutorialAndMessage(root: HTMLElement, view: View): void {
   const tutorial = view.mode === "tutorial";
   root.querySelector(".tut-title")!.textContent = view.title ?? "";

@@ -734,12 +734,16 @@ body {
     flex: 0 0 auto;
   }
 
-  /* the "> history" trigger sits under the toolbar; hidden while the sheet is up */
-  .layout.has-history .hist-trigger {
+  /* the "> history" trigger sits under the toolbar. Its row is always reserved
+     (visibility, not display) so it appearing on the first win can't shift the
+     vertically-centered layout. Revealed once there is history; hidden again
+     while the sheet itself is open. */
+  .cli:not(.tutorial) .hist-trigger {
     display: block;
+    visibility: hidden;
   }
-  .layout.show-history .hist-trigger {
-    display: none;
+  .layout.has-history:not(.show-history) .hist-trigger {
+    visibility: visible;
   }
 
   /* the history panel becomes a bottom sheet */
