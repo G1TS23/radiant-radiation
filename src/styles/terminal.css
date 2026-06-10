@@ -117,9 +117,12 @@ body {
   color: var(--dim);
   font-size: 0.85em;
 }
-/* theme toggle lives at the top, away from the game buttons; touch only */
-.bar-theme {
-  display: none;
+/* theme + zen toggles live at the top-right, away from the game buttons */
+.bar-theme,
+.bar-zen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--line);
   color: var(--fg);
@@ -129,8 +132,47 @@ body {
   padding: 7px 11px;
   cursor: pointer;
 }
-.bar-theme:active {
+.bar-theme:active,
+.bar-zen:active {
   background: var(--panel);
+}
+/* the zen toggle stays visible in zen — it (with Esc) is the way back out */
+.layout.zen .bar-zen {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --- zen mode: fade the chrome out, keep its layout space so the grid never
+   moves or resizes; only the grid (and the toggle buttons) remain visible --- */
+.bar-title,
+.bar-meta,
+.hud,
+.keys,
+.hist-spacer,
+.hist-trigger,
+.toolbar,
+.history {
+  transition:
+    opacity 0.28s ease,
+    visibility 0.28s;
+}
+.bar {
+  transition: border-color 0.28s ease;
+}
+.layout.zen .bar {
+  border-color: transparent;
+}
+.layout.zen .bar-title,
+.layout.zen .bar-meta,
+.layout.zen .hud,
+.layout.zen .keys,
+.layout.zen .hist-spacer,
+.layout.zen .hist-trigger,
+.layout.zen .toolbar,
+.layout.zen .history {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* --- board + grid --- */
@@ -287,7 +329,8 @@ body {
 /* strip the game chrome during the tutorial */
 .cli.tutorial .hud,
 .cli.tutorial .toolbar,
-.cli.tutorial .bar-theme {
+.cli.tutorial .bar-theme,
+.cli.tutorial .bar-zen {
   display: none;
 }
 .layout.tutorial .history,
@@ -471,7 +514,15 @@ body {
     animation: none;
   }
   .history,
-  .hist-backdrop {
+  .hist-backdrop,
+  .bar,
+  .bar-title,
+  .bar-meta,
+  .hud,
+  .keys,
+  .hist-spacer,
+  .hist-trigger,
+  .toolbar {
     transition: none;
   }
 }
@@ -673,9 +724,6 @@ body {
   }
   .toolbar {
     display: flex;
-  }
-  .bar-theme {
-    display: inline-block; /* theme toggle up top, off the game toolbar */
   }
   .hist-spacer {
     display: none !important;

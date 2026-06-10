@@ -39,11 +39,13 @@ import { computeView, tutorialExpected, type Session } from "./view-model";
 const TUTORIAL_DONE_KEY = "rr.tutorialDone";
 const DIFFICULTY_KEY = "rr.difficulty";
 const THEME_KEY = "rr.theme";
+const ZEN_KEY = "rr.zen";
 
 let root: HTMLElement;
 let historyPanel: HTMLElement | null;
 let historyEntries: GameRecord[] = [];
 let session: Session;
+let zenOn = false; // zen mode: only the grid on screen (free play only)
 let flash: Vertex | null = null; // 2x2 to flash after a move (touch feedback)
 let flashTimer: number | undefined;
 let advanceTimer: number | undefined; // auto-advance to the next puzzle after a win
@@ -316,12 +318,16 @@ const handlers: InputHandlers = {
     const light = document.documentElement.classList.toggle("light");
     writeStorage(THEME_KEY, light ? "light" : "dark");
   },
+  zen() {
+    toggleZen();
+  },
 };
 
 // --- view + render ---------------------------------------------------------
 
 function draw(): void {
   render(root, session.state, computeView(session, flash));
+  applyZen(); // keep the zen class in sync with the mode on every transition
   // Autosave only an in-progress free-play game (finished games go to history).
   if (session.mode === "free" && !isOver(session.state)) {
     saveGame({
@@ -351,8 +357,21 @@ function toggleHistory(): void {
   historyPanel?.parentElement?.classList.toggle("show-history");
 }
 
+/** Reflect the zen flag on the layout — only strips chrome during free play. */
+function applyZen(): void {
+  root.parentElement?.classList.toggle("zen", zenOn && session.mode === "free");
+}
+
+/** Zen mode: hide everything but the grid. Toggled by Esc or the corner button. */
+function toggleZen(): void {
+  if (session.mode !== "free") return; // the tutorial needs its text
+  zenOn = !zenOn;
+  writeStorage(ZEN_KEY, zenOn ? "1" : "0");
+  applyZen();
+}
+
 /** On-screen control actions (data-action values). */
-const ACTIONS = ["undo", "reset", "new", "diff", "theme", "hist", "skip", "next"] as const;
+const ACTIONS = ["undo", "reset", "new", "diff", "theme", "hist", "zen", "skip", "next"] as const;
 type Action = (typeof ACTIONS)[number];
 const isAction = (s: string): s is Action => (ACTIONS as readonly string[]).includes(s);
 
@@ -377,6 +396,9 @@ function onAction(action: Action): void {
     case "hist":
       toggleHistory();
       break;
+    case "zen":
+      toggleZen();
+      break;
     case "skip":
       handlers.skip();
       break;
@@ -395,6 +417,8 @@ function boot(): void {
 
   // Single source for the auto-advance duration: the CTA loader reads it in CSS.
   root.style.setProperty("--auto-advance", `${AUTO_ADVANCE_MS}ms`);
+
+  zenOn = readStorage(ZEN_KEY) === "1";
 
   attachInput(root, handlers);
 

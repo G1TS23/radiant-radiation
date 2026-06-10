@@ -57,6 +57,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <span class="bar-right">
         <span class="bar-meta"></span>
         <button class="bar-theme" data-action="theme" aria-label="toggle theme">◐</button>
+        <button class="bar-zen" data-action="zen" aria-label="toggle zen mode" title="zen mode (esc)">⛶</button>
       </span>
     </header>
     <section class="tut-text">

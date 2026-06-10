@@ -33,6 +33,8 @@ export interface InputHandlers {
   skip(): void;
   /** T: toggle light / dark theme. */
   toggleTheme(): void;
+  /** Esc: toggle zen mode (only the grid on screen). */
+  zen(): void;
 }
 
 /** True when focus is in a text field, so game keys shouldn't fire. */
@@ -124,6 +126,9 @@ export function attachInput(root: HTMLElement, h: InputHandlers): () => void {
       case "t":
       case "T":
         h.toggleTheme();
+        break;
+      case "Escape":
+        h.zen();
         break;
       case "d":
       case "D":
