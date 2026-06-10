@@ -15,7 +15,12 @@
   --cell-off: #e8ece8; /* "white" cell */
   --cell-on: #11150f; /* "black" cell */
 
-  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  /* Latin uses the monospace fonts first; Japanese glyphs fall back to the CJK
+     fonts (system monospace/gothic) before the generic monospace. */
+  --mono:
+    ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas,
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Yu Gothic UI", Meiryo,
+    "Noto Sans Mono CJK JP", "Noto Sans CJK JP", monospace;
 }
 
 /* soft light theme — muted sage paper, no harsh black/white */
