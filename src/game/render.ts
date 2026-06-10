@@ -121,7 +121,12 @@ function placeOverlay(box: HTMLElement | null, v: Vertex | null | undefined): vo
 }
 
 // Helpers extracted from `render` to reduce cognitive complexity.
-function updateCells(grid: HTMLElement, N: number, cellsArr: boolean[], flash: Vertex | null): void {
+function updateCells(
+  grid: HTMLElement,
+  N: number,
+  cellsArr: boolean[],
+  flash: Vertex | null,
+): void {
   const f = flash ?? null;
   for (let y = 0; y < N; y++) {
     for (let x = 0; x < N; x++) {
@@ -134,7 +139,11 @@ function updateCells(grid: HTMLElement, N: number, cellsArr: boolean[], flash: V
   }
 }
 
-function updateOverlays(overlay: HTMLElement, cursor: Vertex, hint: Vertex | null | undefined): void {
+function updateOverlays(
+  overlay: HTMLElement,
+  cursor: Vertex,
+  hint: Vertex | null | undefined,
+): void {
   placeOverlay(overlay.querySelector<HTMLElement>(".cursor-box"), cursor);
   placeOverlay(overlay.querySelector<HTMLElement>(".hint-box"), hint ?? null);
 }
@@ -158,7 +167,12 @@ function updateHUD(root: HTMLElement, state: GameState): void {
   root.querySelector(".hud-par")!.textContent = state.par === null ? "" : `par: ${PAD(state.par)}`;
 }
 
-function updateStatusAndClasses(root: HTMLElement, state: GameState, grid: HTMLElement, tutorial: boolean): void {
+function updateStatusAndClasses(
+  root: HTMLElement,
+  state: GameState,
+  grid: HTMLElement,
+  tutorial: boolean,
+): void {
   const won = isWin(state);
   const lost = isLost(state);
 
