@@ -117,6 +117,11 @@ body {
   color: var(--dim);
   font-size: 0.85em;
 }
+/* "difficulty · NxN" separator — a dot on desktop, dropped on mobile (a real
+   space already sits before it in the text, so screen readers read them apart) */
+.bar-sep::before {
+  content: "· ";
+}
 /* theme + zen toggles live at the top-right, away from the game buttons.
    Kept compact so the bar's underline stays level with the keys / history
    headers; enlarged on touch (below) for a comfortable tap target. */
@@ -797,6 +802,10 @@ body {
   .bar-lang {
     font-size: 1.1em;
     padding: 7px 11px;
+  }
+  /* drop the dot so "difficulty NxN" no longer wraps onto three lines */
+  .bar-sep::before {
+    content: "";
   }
   /* history opens as a bottom sheet that slides up from the screen bottom */
   .hist-head {

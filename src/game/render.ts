@@ -150,15 +150,16 @@ function updateOverlays(
 
 function updateBarMeta(root: HTMLElement, state: GameState, view: View): void {
   const size = `${state.N}×${state.N}`;
-  let meta: string;
+  const metaEl = root.querySelector(".bar-meta")!;
   if (view.mode === "tutorial" && view.step) {
-    meta = t("bar.tutorial", { current: view.step.current, total: view.step.total });
+    metaEl.textContent = t("bar.tutorial", { current: view.step.current, total: view.step.total });
   } else if (view.difficulty) {
-    meta = `${view.difficulty} · ${size}`;
+    // separator is a pseudo-element so it can drop the dot on mobile (where the
+    // bar is tight and "difficulty · NxN" otherwise wraps onto three lines)
+    metaEl.innerHTML = `${esc(view.difficulty)} <span class="bar-sep" aria-hidden="true"></span>${size}`;
   } else {
-    meta = size;
+    metaEl.textContent = size;
   }
-  root.querySelector(".bar-meta")!.textContent = meta;
   root.querySelector(".bar-lang")!.textContent = getLocale().toUpperCase();
 }
 
