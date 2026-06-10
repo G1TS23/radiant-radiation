@@ -136,8 +136,7 @@ body {
   cursor: pointer;
 }
 .bar-lang {
-  font-size: 0.8em;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: var(--dim);
 }
 .bar-theme:active,
@@ -794,12 +793,10 @@ body {
   /* bigger tap targets for the bar toggles on touch (header alignment only
      matters on desktop, where the columns sit side by side) */
   .bar-theme,
-  .bar-zen {
+  .bar-zen,
+  .bar-lang {
     font-size: 1.1em;
     padding: 7px 11px;
-  }
-  .bar-lang {
-    padding: 8px 10px;
   }
   /* history opens as a bottom sheet that slides up from the screen bottom */
   .hist-head {
