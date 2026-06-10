@@ -354,7 +354,7 @@ function toggleHistory(): void {
 }
 
 /** On-screen control actions (data-action values). */
-const ACTIONS = ["undo", "reset", "new", "diff", "theme", "skip", "next"] as const;
+const ACTIONS = ["undo", "reset", "new", "diff", "theme", "hist", "skip", "next"] as const;
 type Action = (typeof ACTIONS)[number];
 const isAction = (s: string): s is Action => (ACTIONS as readonly string[]).includes(s);
 
@@ -375,6 +375,9 @@ function onAction(action: Action): void {
       break;
     case "theme":
       handlers.toggleTheme();
+      break;
+    case "hist":
+      toggleHistory();
       break;
     case "skip":
       handlers.skip();
@@ -412,10 +415,12 @@ function boot(): void {
   historyPanel = document.getElementById("history");
   historyEntries = loadHistory();
   drawHistory();
+  // Tapping the backdrop closes the mobile history bottom sheet.
+  document.querySelector(".hist-backdrop")?.addEventListener("click", toggleHistory);
   historyPanel?.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
     if (target.closest(".hist-head")) {
-      toggleHistory(); // accordion toggle (touch)
+      toggleHistory(); // close the sheet (touch) / no-op on desktop
       return;
     }
     if (target.closest(".hist-clear")) {

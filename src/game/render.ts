@@ -90,6 +90,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <button class="free-only" data-action="diff">difficulty</button>
       <button class="tut-only" data-action="skip">skip</button>
     </nav>
+    <button class="hist-trigger" data-action="hist">history</button>
     `;
 }
 

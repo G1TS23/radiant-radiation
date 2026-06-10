@@ -296,7 +296,8 @@ body {
 }
 .layout.tutorial .history,
 .layout.tutorial .hist-spacer,
-.layout.tutorial .keys {
+.layout.tutorial .keys,
+.cli.tutorial .hist-trigger {
   display: none !important;
 }
 
@@ -388,8 +389,27 @@ body {
 .cli.tutorial .free-only {
   display: none;
 }
-.layout:not(.has-history) .has-history-only {
-  display: none;
+/* the mobile history trigger: styled like the title, opens the bottom sheet */
+.hist-trigger {
+  display: none; /* shown only on touch when there is history (see media query) */
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 1.05em;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-align: left;
+  cursor: pointer;
+}
+.hist-trigger::before {
+  content: "> ";
+  color: var(--dim);
+}
+.hist-trigger::after {
+  content: " ▸";
+  color: var(--dim);
 }
 
 /* --- keyboard shortcuts: a simple list to the left of the board (desktop) --- */
@@ -473,6 +493,10 @@ body {
   .cta.loading::after {
     animation: none;
   }
+  .history,
+  .hist-backdrop {
+    transition: none;
+  }
 }
 .cli.won .cursor-box,
 .cli.lost .cursor-box {
@@ -496,6 +520,9 @@ body {
 }
 .layout.has-history .history {
   display: block;
+}
+.hist-backdrop {
+  display: none; /* shown only as the mobile bottom-sheet backdrop */
 }
 .history {
   font-size: 0.85em;
@@ -674,38 +701,25 @@ body {
   .hist-spacer {
     display: none !important;
   }
-  /* history is an accordion under the toolbar: head stays, body collapses */
+  /* history opens as a bottom sheet that slides up from the screen bottom */
   .hist-head {
     cursor: pointer;
+    flex: 0 0 auto;
   }
   .hist-chevron {
     display: inline;
   }
   .hist-chevron::after {
-    content: "▸";
-  }
-  .layout.show-history .hist-chevron::after {
-    content: "▾";
+    content: "▾"; /* the sheet header — tap to dismiss */
   }
   .hist-body {
-    display: none;
-  }
-  .layout.show-history .hist-body {
-    display: block;
     flex: 1 1 auto;
     min-height: 0;
-    overflow-y: auto; /* the list scrolls, not the page */
+    overflow-y: auto;
     overscroll-behavior: contain;
   }
-  /* the clear footer collapses with the accordion */
-  .hist-clear {
-    display: none;
-  }
-  .layout.show-history .hist-clear {
-    display: inline-block;
-  }
 
-  /* Lock the page: the board + controls stay fixed; only the history scrolls. */
+  /* Lock the page: the board + controls stay fixed. */
   body {
     overflow: hidden;
     align-items: stretch;
@@ -720,13 +734,46 @@ body {
   .cli {
     flex: 0 0 auto;
   }
+
+  /* the "> history" trigger sits under the toolbar; hidden while the sheet is up */
+  .layout.has-history .hist-trigger {
+    display: block;
+  }
+  .layout.show-history .hist-trigger {
+    display: none;
+  }
+
+  /* the history panel becomes a bottom sheet */
   .layout.has-history .history {
     display: flex;
-    flex: 0 1 auto;
-    min-height: 0;
     flex-direction: column;
+    position: fixed;
+    inset: auto 0 0 0;
+    width: auto;
+    max-height: 85vh;
+    z-index: 30;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    padding: 16px clamp(14px, 5vw, 24px) calc(16px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%); /* off-screen when closed */
+    transition: transform 0.28s ease;
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 0.18);
   }
-  .hist-head {
-    flex: 0 0 auto;
+  .layout.show-history .history {
+    transform: translateY(0); /* slide up when open */
+  }
+  .hist-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: rgb(0 0 0 / 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  .layout.show-history .hist-backdrop {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
