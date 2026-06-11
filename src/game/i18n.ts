@@ -69,15 +69,18 @@ const en: Catalog = {
   "tut.tip": "tip: tap a square — or use arrow keys + space",
   "tut.skip": "skip tutorial →",
   "tut.one.title": "one move",
-  "tut.one.instruction": "Tap the glowing 2x2 block. One flip can make the whole grid one color.",
-  "tut.one.success": "solved — one 2x2 flip changes four cells at once.",
+  "tut.one.instruction":
+    "this is the grid. you can flip the shade (black/white) of a 2×2 block of 4 cells. the goal is to fill the grid with a single shade. here, one move turns it all white.",
+  "tut.one.success": "nice! you can move on to the next step.",
   "tut.two.title": "two moves",
   "tut.two.instruction":
-    "Now follow two glowing blocks. Notice how the second flip overlaps the first.",
-  "tut.two.success": "solved — overlapping flips are the core of the puzzle.",
+    "that was too easy. here's a step up. by combining several moves you can fill the grid with black. follow the hints.",
+  "tut.two.success": "great! combining moves is the heart of the game.",
   "tut.three.title": "your turn",
-  "tut.three.instruction": "Solve this one without hints. There is no move limit in the tutorial.",
-  "tut.three.success": "solved — every cell is one color. you're ready.",
+  "tut.three.instruction":
+    "now solve this one without hints. you can use as many moves as you like.",
+  "tut.three.success":
+    "you're ready for the adventure! have fun, and remember: you can fill the grid with white or black.",
 
   "announce.new": "new {diff} puzzle, {n} by {n}",
   "announce.replay": "replaying {diff} puzzle, {n} by {n}",
@@ -137,15 +140,17 @@ const fr: Catalog = {
   "tut.skip": "passer le tutoriel →",
   "tut.one.title": "un coup",
   "tut.one.instruction":
-    "Tape le bloc 2×2 qui brille. Un seul retournement peut rendre toute la grille d'une couleur.",
-  "tut.one.success": "résolu — un retournement 2×2 change quatre cases d'un coup.",
+    "voici la grille. tu peux inverser les nuances (noir/blanc) de 4 cases (2×2). le but est de remplir la grille d'une seule nuance. ici, un seul coup et tout passe en blanc.",
+  "tut.one.success": "bravo ! tu peux passer à l'étape suivante.",
   "tut.two.title": "deux coups",
   "tut.two.instruction":
-    "Suis maintenant deux blocs qui brillent. Remarque comme le second retournement chevauche le premier.",
-  "tut.two.success": "résolu — les retournements qui se chevauchent sont le cœur du puzzle.",
+    "c'était trop facile. voici un niveau de difficulté supplémentaire. en combinant plusieurs coups, tu peux remplir la grille de noir. suis les indications.",
+  "tut.two.success": "très bien ! combiner les coups est le cœur du jeu.",
   "tut.three.title": "à toi",
-  "tut.three.instruction": "Résous celui-ci sans indice. Le tutoriel n'a pas de limite de coups.",
-  "tut.three.success": "résolu — toutes les cases sont d'une couleur. tu es prêt.",
+  "tut.three.instruction":
+    "maintenant, résous ce puzzle sans indice. tu peux utiliser autant de coups que tu veux.",
+  "tut.three.success":
+    "tu es prêt pour l'aventure ! amuse-toi bien, et n'oublie pas : tu peux remplir la grille de blanc ou de noir.",
 
   "announce.new": "nouveau puzzle {diff}, {n} par {n}",
   "announce.replay": "rejeu du puzzle {diff}, {n} par {n}",
@@ -205,15 +210,17 @@ const es: Catalog = {
   "tut.skip": "saltar tutorial →",
   "tut.one.title": "un movimiento",
   "tut.one.instruction":
-    "Toca el bloque 2×2 que brilla. Un solo giro puede dejar toda la cuadrícula de un color.",
-  "tut.one.success": "resuelto — un giro 2×2 cambia cuatro casillas a la vez.",
+    "esta es la cuadrícula. puedes invertir el tono (negro/blanco) de un bloque 2×2 de 4 casillas. el objetivo es llenar la cuadrícula de un solo tono. aquí, un solo movimiento y todo se vuelve blanco.",
+  "tut.one.success": "¡bien! puedes pasar al siguiente paso.",
   "tut.two.title": "dos movimientos",
   "tut.two.instruction":
-    "Ahora sigue dos bloques que brillan. Fíjate cómo el segundo giro se solapa con el primero.",
-  "tut.two.success": "resuelto — los giros que se solapan son el núcleo del puzzle.",
+    "eso fue demasiado fácil. aquí tienes un nivel más. combinando varios movimientos puedes llenar la cuadrícula de negro. sigue las indicaciones.",
+  "tut.two.success": "¡muy bien! combinar movimientos es el corazón del juego.",
   "tut.three.title": "tu turno",
-  "tut.three.instruction": "Resuelve este sin pistas. El tutorial no tiene límite de movimientos.",
-  "tut.three.success": "resuelto — todas las casillas son de un color. ya estás listo.",
+  "tut.three.instruction":
+    "ahora resuelve este sin pistas. puedes usar tantos movimientos como quieras.",
+  "tut.three.success":
+    "¡estás listo para la aventura! diviértete, y recuerda: puedes llenar la cuadrícula de blanco o de negro.",
 
   "announce.new": "nuevo puzzle {diff}, {n} por {n}",
   "announce.replay": "repitiendo puzzle {diff}, {n} por {n}",
@@ -272,14 +279,17 @@ const ja: Catalog = {
   "tut.tip": "ヒント: マスをタップ — または矢印キー + スペース",
   "tut.skip": "チュートリアルをスキップ →",
   "tut.one.title": "ひと手",
-  "tut.one.instruction": "光る2×2のブロックをタップ。ひと回転でグリッド全体を一色にできます。",
-  "tut.one.success": "クリア — 2×2の反転で4マスが一度に変わります。",
+  "tut.one.instruction":
+    "これがグリッドです。2×2の4マスの濃淡（白黒）を反転できます。目的はグリッドを1色で埋めること。ここでは1手ですべて白になります。",
+  "tut.one.success": "いいね！次のステップに進めます。",
   "tut.two.title": "ふた手",
-  "tut.two.instruction": "次は光る2つのブロックに従って。2回目の反転が1回目と重なるのに注目。",
-  "tut.two.success": "クリア — 重なる反転がパズルの核心です。",
+  "tut.two.instruction":
+    "簡単すぎましたね。少し難しくします。複数の手を組み合わせると、グリッドを黒で埋められます。指示に従ってください。",
+  "tut.two.success": "お見事！手を組み合わせるのがこのゲームの核心です。",
   "tut.three.title": "あなたの番",
-  "tut.three.instruction": "今度はヒントなしで解いてみよう。チュートリアルに手数制限はありません。",
-  "tut.three.success": "クリア — 全マスが一色。準備完了です。",
+  "tut.three.instruction": "今度はヒントなしで解いてみよう。手数はいくらでも使えます。",
+  "tut.three.success":
+    "冒険の準備は完了です！楽しんでね。グリッドは白でも黒でも埋められることをお忘れなく。",
 
   "announce.new": "新しい{diff}パズル、{n}×{n}",
   "announce.replay": "{diff}パズルを再挑戦、{n}×{n}",

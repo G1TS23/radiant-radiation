@@ -794,6 +794,10 @@ body {
   .keys {
     display: none;
   }
+  /* the tutorial tip mentions arrow keys + space, irrelevant on touch */
+  .tut-keys {
+    display: none;
+  }
   .toolbar {
     display: flex;
   }

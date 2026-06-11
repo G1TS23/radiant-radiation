@@ -44,15 +44,15 @@ function step(
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
   step("one-move", ["##.", "##.", "..."], {
-    targetColor: null, // any single color wins
+    targetColor: false, // one flip turns it all white
     title: "tut.one.title", // i18n keys (resolved with t() where displayed)
     instruction: "tut.one.instruction",
     successText: "tut.one.success",
     guided: true,
     solution: [{ i: 0, j: 0 }],
   }),
-  step("two-moves", ["##.", "#.#", ".##"], {
-    targetColor: null,
+  step("two-moves", ["..#", ".#.", "#.."], {
+    targetColor: true, // the two scripted flips fill the grid with black
     title: "tut.two.title",
     instruction: "tut.two.instruction",
     successText: "tut.two.success",
