@@ -137,6 +137,19 @@ function updateCells(
       cell.classList.toggle("flash", inFlash);
     }
   }
+  // Flip-point markers (touch): colour each quadrant with the INVERSE of the
+  // cell under it — a live preview of what tapping this intersection produces.
+  const inv = (x: number, y: number): string =>
+    cellsArr[index(N, x, y)] ? "var(--cell-off)" : "var(--cell-on)";
+  for (let y = 1; y < N; y++) {
+    for (let x = 1; x < N; x++) {
+      const m = grid.children[index(N, x, y)] as HTMLElement;
+      m.style.setProperty("--m-tl", inv(x - 1, y - 1));
+      m.style.setProperty("--m-tr", inv(x, y - 1));
+      m.style.setProperty("--m-bl", inv(x - 1, y));
+      m.style.setProperty("--m-br", inv(x, y));
+    }
+  }
 }
 
 function updateOverlays(

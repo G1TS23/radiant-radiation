@@ -268,6 +268,7 @@ body {
   touch-action: manipulation;
 }
 .cell {
+  position: relative; /* anchors the flip-point marker at the cell's corner */
   background: var(--cell-off);
   cursor: pointer;
   min-width: 0;
@@ -796,6 +797,57 @@ body {
   }
   /* the tutorial tip mentions arrow keys + space, irrelevant on touch */
   .tut-keys {
+    display: none;
+  }
+  /* flip-point markers at the interior intersections (where 4 cells meet), so
+     it reads that you tap the crossings, not the cell centres. A marker sits at
+     the top-left corner of every interior cell = one per interior vertex. Each
+     quadrant is the INVERSE of the cell under it = a preview of the flip result
+     (and always contrasts, so no outline needed). The --m-* vars are set in JS. */
+  .cell::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 15px;
+    /* centre on the gap crossing: it's half the 3px gap up-left of the corner */
+    transform: translate(calc(-50% - 1.5px), calc(-50% - 1.5px));
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 50%;
+    /* the four inverse-colour quadrants, with the intersection's cross kept on
+       top but in an attenuated tint */
+    --mk-line: color-mix(in srgb, var(--line) 50%, transparent);
+    background-image:
+      linear-gradient(var(--mk-line), var(--mk-line)),
+      linear-gradient(var(--mk-line), var(--mk-line)),
+      linear-gradient(var(--m-tl, transparent), var(--m-tl, transparent)),
+      linear-gradient(var(--m-tr, transparent), var(--m-tr, transparent)),
+      linear-gradient(var(--m-bl, transparent), var(--m-bl, transparent)),
+      linear-gradient(var(--m-br, transparent), var(--m-br, transparent));
+    background-size:
+      3px 100%,
+      100% 3px,
+      50% 50%,
+      50% 50%,
+      50% 50%,
+      50% 50%;
+    background-position:
+      center,
+      center,
+      0 0,
+      100% 0,
+      0 100%,
+      100% 100%;
+    background-repeat: no-repeat;
+  }
+  .cell[data-x="0"]::after,
+  .cell[data-y="0"]::after {
+    display: none; /* edges aren't interior intersections */
+  }
+  /* no keyboard cursor on touch — you tap directly, so hide its frame */
+  .cursor-box {
     display: none;
   }
   .toolbar {
