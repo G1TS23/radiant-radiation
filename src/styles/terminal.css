@@ -266,6 +266,10 @@ body {
   border: 3px solid var(--line);
   user-select: none;
   touch-action: manipulation;
+  /* on a win the lines + border fade into the winning colour (set in JS) */
+  transition:
+    background-color 0.45s ease,
+    border-color 0.45s ease;
 }
 .cell {
   position: relative; /* anchors the flip-point marker at the cell's corner */
@@ -841,10 +845,15 @@ body {
       0 100%,
       100% 100%;
     background-repeat: no-repeat;
+    transition: opacity 0.3s ease;
   }
   .cell[data-x="0"]::after,
   .cell[data-y="0"]::after {
     display: none; /* edges aren't interior intersections */
+  }
+  /* on a win the markers fade out with the lines, leaving a solid surface */
+  .cli.won .cell::after {
+    opacity: 0;
   }
   /* no keyboard cursor on touch — you tap directly, so hide its frame */
   .cursor-box {

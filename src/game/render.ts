@@ -193,6 +193,11 @@ function updateStatusAndClasses(
   const won = isWin(state);
   const lost = isLost(state);
 
+  // On a win, melt the grid lines into the winning colour so the board becomes
+  // one solid surface — but keep the border as a frame around it.
+  const winColor = state.cells[0] ? "var(--cell-on)" : "var(--cell-off)";
+  grid.style.backgroundColor = won ? winColor : "";
+
   if (won) {
     const ox = state.cursor.i + 0.5;
     const oy = state.cursor.j + 0.5;
