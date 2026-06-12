@@ -86,6 +86,10 @@ function snapshot(s: GameState): GameState {
   return { ...s, cells: s.cells.slice(), cursor: { ...s.cursor } };
 }
 
+/** Compact identity of a board, for the "don't repeat in a row" guard. */
+const boardKey = (cells: boolean[]): string => cells.map((c) => (c ? "1" : "0")).join("");
+let lastBoardKey: string | null = null; // the previous puzzle's starting board
+
 // --- persistence -----------------------------------------------------------
 
 const tutorialDone = (): boolean => readStorage(TUTORIAL_DONE_KEY) === "1";
@@ -104,7 +108,18 @@ function loadDifficulty(): number {
 function startFree(diff: number): void {
   cancelAutoAdvance();
   const d = DIFFICULTIES[diff];
-  const state = newGameWithPar(d.N, d.par, d.margin);
+  // Don't hand out a board we've already seen: the previous one always, plus any
+  // of this size already in the history panel. Easy's pool is small (~138) but
+  // history caps at 20, so ~118 fresh boards always remain — no risk of running
+  // out. The bounded retry degrades gracefully (just returns a board) if it did.
+  const avoid = new Set<string>();
+  if (lastBoardKey) avoid.add(lastBoardKey);
+  for (const r of historyEntries) if (r.N === d.N) avoid.add(boardKey(r.cells));
+  let state = newGameWithPar(d.N, d.par, d.margin);
+  for (let i = 0; i < 30 && avoid.has(boardKey(state.cells)); i++) {
+    state = newGameWithPar(d.N, d.par, d.margin);
+  }
+  lastBoardKey = boardKey(state.cells);
   session = {
     mode: "free",
     state,
@@ -164,6 +179,7 @@ function restoreGame(saved: SavedGame): void {
     replay: saved.replay ?? false,
     replayOf: saved.replayOf,
   };
+  lastBoardKey = boardKey(saved.initial.cells);
   draw();
 }
 
@@ -181,6 +197,7 @@ function replayRecord(rec: GameRecord): void {
     replay: true,
     replayOf: rec.t,
   };
+  lastBoardKey = boardKey(rec.cells); // next fresh puzzle won't repeat this one
   draw();
   announce(t("announce.replay", { diff: t("difficulty." + DIFFICULTIES[rec.diff].id), n: rec.N }));
 }
