@@ -400,10 +400,9 @@ body {
 .tut-skip:hover {
   color: var(--fg);
 }
-/* strip the game chrome during the tutorial */
+/* strip the game chrome during the tutorial (keep the theme toggle available) */
 .cli.tutorial .hud,
 .cli.tutorial .toolbar,
-.cli.tutorial .bar-theme,
 .cli.tutorial .bar-zen {
   display: none;
 }
