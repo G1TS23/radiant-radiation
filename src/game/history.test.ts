@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import {
   loadHistory,
   addRecord,
+  improveRecord,
   clearHistory,
   saveGame,
   loadGame,
@@ -45,6 +46,41 @@ describe("history records", () => {
   it("ignores corrupted JSON", () => {
     localStorage.setItem("rr.history", "{not json");
     expect(loadHistory()).toEqual([]);
+  });
+});
+
+describe("improveRecord (better replay)", () => {
+  it("a win in fewer moves replaces a slower win", () => {
+    addRecord(rec({ t: 100, result: "won", moves: 9 }));
+    const { list, improved } = improveRecord(100, 6);
+    expect(improved).toBe(true);
+    expect(list[0].moves).toBe(6);
+    expect(list[0].result).toBe("won");
+    expect(loadHistory()[0].moves).toBe(6); // persisted
+  });
+  it("a win replaces a previous loss", () => {
+    addRecord(rec({ t: 100, result: "lost", moves: 13 }));
+    const { list, improved } = improveRecord(100, 11);
+    expect(improved).toBe(true);
+    expect(list[0].result).toBe("won");
+    expect(list[0].moves).toBe(11);
+  });
+  it("never downgrades: equal or more moves on a prior win is a no-op", () => {
+    addRecord(rec({ t: 100, result: "won", moves: 6 }));
+    expect(improveRecord(100, 6).improved).toBe(false);
+    expect(improveRecord(100, 8).improved).toBe(false);
+    expect(loadHistory()[0].moves).toBe(6);
+  });
+  it("only touches the matching timestamp, others untouched", () => {
+    addRecord(rec({ t: 1, moves: 9 }));
+    addRecord(rec({ t: 2, moves: 9 })); // newest first -> index 0
+    improveRecord(1, 4);
+    const list = loadHistory();
+    expect(list.find((r) => r.t === 1)!.moves).toBe(4);
+    expect(list.find((r) => r.t === 2)!.moves).toBe(9);
+  });
+  it("is a safe no-op when the record is gone (cleared)", () => {
+    expect(improveRecord(999, 3)).toEqual({ list: [], improved: false });
   });
 });
 

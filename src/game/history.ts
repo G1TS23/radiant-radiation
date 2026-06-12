@@ -26,6 +26,7 @@ export interface SavedGame {
   initial: GameState;
   diff: number;
   replay?: boolean; // a replayed puzzle (practice), not recorded again on finish
+  replayOf?: number; // timestamp of the record being replayed, for in-place improvement
 }
 
 const HISTORY_KEY = "rr.history";
@@ -114,6 +115,24 @@ export function addRecord(rec: GameRecord): GameRecord[] {
   return list;
 }
 
+/**
+ * Upgrade a finished record after a better REPLAY of the same puzzle. Caller
+ * invokes this only on a win. It ONLY ever improves: a win replaces a previous
+ * loss, and a win in fewer moves replaces a slower win — never the reverse.
+ * The board/par/limit are fixed (same puzzle), so only result + moves change.
+ * Returns the (possibly unchanged) list and whether anything was improved.
+ */
+export function improveRecord(t: number, moves: number): { list: GameRecord[]; improved: boolean } {
+  const list = loadHistory();
+  const i = list.findIndex((r) => r.t === t);
+  if (i < 0) return { list, improved: false }; // record gone (e.g. cleared)
+  const r = list[i];
+  if (r.result === "won" && moves >= r.moves) return { list, improved: false };
+  list[i] = { ...r, result: "won", moves };
+  write(HISTORY_KEY, JSON.stringify(list));
+  return { list, improved: true };
+}
+
 export function clearHistory(): GameRecord[] {
   remove(HISTORY_KEY);
   return [];
@@ -134,7 +153,8 @@ export function loadGame(): SavedGame | null {
     const initial = coerceState(v?.initial);
     const diff = int(v?.diff, 0, 99);
     if (!state || !initial || diff === null) return null;
-    return { state, initial, diff, replay: v.replay === true };
+    const replayOf = v.replayOf === undefined ? undefined : (int(v.replayOf) ?? undefined);
+    return { state, initial, diff, replay: v.replay === true, replayOf };
   } catch {
     return null;
   }

@@ -19,6 +19,7 @@ export interface Session {
   stepIndex: number; // tutorial only
   diff: number; // difficulty index (free play)
   replay: boolean; // a replayed puzzle (practice) — not re-recorded on finish
+  replayOf?: number; // timestamp of the record being replayed (for in-place improvement)
 }
 
 /** The move the tutorial expects next (highlighted + the only one accepted). */

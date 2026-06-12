@@ -26,6 +26,7 @@ import { attachInput, type InputHandlers } from "./input";
 import {
   loadHistory,
   addRecord,
+  improveRecord,
   clearHistory,
   saveGame,
   loadGame,
@@ -161,6 +162,7 @@ function restoreGame(saved: SavedGame): void {
     stepIndex: 0,
     diff: saved.diff,
     replay: saved.replay ?? false,
+    replayOf: saved.replayOf,
   };
   draw();
 }
@@ -177,6 +179,7 @@ function replayRecord(rec: GameRecord): void {
     stepIndex: 0,
     diff: rec.diff,
     replay: true,
+    replayOf: rec.t,
   };
   draw();
   announce(t("announce.replay", { diff: t("difficulty." + DIFFICULTIES[rec.diff].id), n: rec.N }));
@@ -187,7 +190,17 @@ function recordCurrent(): void {
   const s = session.state;
   if (session.mode !== "free" || s.par === null || s.limit === null) return;
   clearGame(); // the game is over; nothing in-progress to resume
-  if (session.replay) return; // replayed puzzles are practice — don't duplicate them
+  if (session.replay) {
+    // Replays aren't re-recorded, but a better run upgrades the original entry.
+    if (isWin(s) && session.replayOf !== undefined) {
+      const { list, improved } = improveRecord(session.replayOf, s.moves);
+      if (improved) {
+        historyEntries = list;
+        drawHistory();
+      }
+    }
+    return;
+  }
   historyEntries = addRecord({
     t: Date.now(),
     diff: session.diff,
@@ -347,6 +360,7 @@ function draw(): void {
       initial: session.initial,
       diff: session.diff,
       replay: session.replay,
+      replayOf: session.replayOf,
     });
   }
 }
