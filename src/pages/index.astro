@@ -1,6 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../styles/terminal.css";
+
+const year = new Date().getFullYear();
 ---
 
 <Layout title="radiant-radiation">
@@ -24,6 +26,11 @@ import "../styles/terminal.css";
     <div class="hist-backdrop" aria-hidden="true"></div>
   </div>
   <div id="lang-screen" class="lang-screen" role="dialog" aria-modal="true" hidden></div>
+  <footer class="footer">
+    <span>© {year} Olivier Falahi</span>
+    <span class="footer-sep" aria-hidden="true"> · </span>
+    <a href="mailto:olivier.falahi@gmail.com" data-i18n="footer.contact">contact</a>
+  </footer>
 </Layout>
 
 <script>

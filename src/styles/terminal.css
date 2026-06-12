@@ -193,6 +193,37 @@ body {
   pointer-events: none;
 }
 
+/* --- discreet page footer: copyright + a contact mailto link --- */
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 0.74em;
+  color: var(--dim);
+  pointer-events: none; /* never intercept clicks; the link re-enables itself */
+  transition:
+    opacity 0.28s ease,
+    visibility 0.28s;
+}
+.footer a {
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  pointer-events: auto;
+}
+.footer a:hover {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+/* zen mode strips all chrome — fade the footer out with it */
+.layout.zen ~ .footer {
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* --- language picker (first visit + the bar's language button) --- */
 .lang-screen {
   position: fixed;

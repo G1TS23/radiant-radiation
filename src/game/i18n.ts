@@ -92,6 +92,8 @@ const en: Catalog = {
   "announce.count": "{black} black, {white} white",
 
   "lang.prompt": "Choose your language",
+
+  "footer.contact": "contact",
 };
 
 const fr: Catalog = {
@@ -163,6 +165,8 @@ const fr: Catalog = {
   "announce.count": "{black} noires, {white} blanches",
 
   "lang.prompt": "Choisissez votre langue",
+
+  "footer.contact": "contact",
 };
 
 const es: Catalog = {
@@ -234,6 +238,8 @@ const es: Catalog = {
   "announce.count": "{black} negras, {white} blancas",
 
   "lang.prompt": "Elige tu idioma",
+
+  "footer.contact": "contacto",
 };
 
 const ja: Catalog = {
@@ -304,6 +310,8 @@ const ja: Catalog = {
   "announce.count": "黒{black}、白{white}",
 
   "lang.prompt": "言語を選択",
+
+  "footer.contact": "問い合わせ",
 };
 
 /** All catalogs (exported for the coverage test). */
