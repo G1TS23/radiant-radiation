@@ -58,7 +58,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <span class="bar-right">
         <span class="bar-meta"></span>
         <button class="bar-lang" data-action="lang" data-i18n-aria="aria.lang">EN</button>
-        <button class="bar-theme" data-action="theme" data-i18n-aria="aria.theme">◐</button>
+        <button class="bar-theme" data-action="theme" data-i18n-aria="aria.theme"><svg class="ic" viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"></path></svg></button>
         <button class="bar-zen" data-action="zen" data-i18n-aria="aria.zen" data-i18n-title="title.zen">⛶</button>
       </span>
     </header>

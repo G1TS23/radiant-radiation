@@ -145,6 +145,11 @@ body {
   letter-spacing: 0.04em;
   color: var(--dim);
 }
+/* SVG icon (theme toggle): block removes the inline baseline gap so flex centres
+   it exactly — text glyphs render off-centre due to their font side-bearings. */
+.bar-theme .ic {
+  display: block;
+}
 .bar-theme:active,
 .bar-zen:active,
 .bar-lang:active {
