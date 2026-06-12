@@ -29,7 +29,7 @@ export interface GameState {
    * true  -> must be all black; false -> all white (tutorial goals).
    */
   targetColor: boolean | null;
-  /** Intended solution length (generation subset size); null = untracked (tutorial). */
+  /** True minimum number of moves to win (the genuine optimum); null = untracked (tutorial). */
   par: number | null;
   /** Max moves allowed before it's a loss; null = unlimited. */
   limit: number | null;
@@ -82,11 +82,86 @@ function shuffle<T>(arr: T[], rng: RNG): void {
   }
 }
 
+/** Cell bitmask (over N*N bits) flipped by the move anchored at vertex (i, j). */
+function moveMask(N: number, i: number, j: number): bigint {
+  let m = 0n;
+  for (const [dx, dy] of [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1],
+  ]) {
+    m |= 1n << BigInt(index(N, i + dx, j + dy));
+  }
+  return m;
+}
+
+/** Flat cell array as a bitmask over N*N bits (bit k set = cell k is black). */
+function cellsToMask(cells: boolean[]): bigint {
+  let m = 0n;
+  for (let k = 0; k < cells.length; k++) if (cells[k]) m |= 1n << BigInt(k);
+  return m;
+}
+
 /**
- * Generate a puzzle with a KNOWN par. Instead of scrambling (where moves cancel
- * and the real solution length is unknowable), we apply `par` DISTINCT moves
- * once each — so the canonical solution is exactly those `par` moves, and the
- * board is always solvable in at most `par` moves. The move limit is par+margin.
+ * GF(2) pivot basis of the move set, keyed by each row's highest set bit and
+ * carrying the combination of moves that produced it. Built once per call;
+ * `solveWeight` back-substitutes against it.
+ */
+function movePivots(N: number): { mask: bigint; combo: bigint }[] {
+  const pivots: { mask: bigint; combo: bigint }[] = [];
+  allVertices(N).forEach((v, id) => {
+    let mask = moveMask(N, v.i, v.j);
+    let combo = 1n << BigInt(id);
+    while (mask) {
+      const h = mask.toString(2).length - 1;
+      const p = pivots[h];
+      if (!p) {
+        pivots[h] = { mask, combo };
+        return;
+      }
+      mask ^= p.mask;
+      combo ^= p.combo;
+    }
+  });
+  return pivots;
+}
+
+/**
+ * Number of moves in the unique solution reaching `target` (a cell bitmask), or
+ * null when `target` is unreachable. Moves are linearly independent (GF(2)
+ * kernel = 0), so the solution — and thus its move count — is unique.
+ */
+function solveWeight(pivots: { mask: bigint; combo: bigint }[], target: bigint): number | null {
+  let mask = target;
+  let combo = 0n;
+  while (mask) {
+    const h = mask.toString(2).length - 1;
+    const p = pivots[h];
+    if (!p) return null;
+    mask ^= p.mask;
+    combo ^= p.combo;
+  }
+  let w = 0;
+  while (combo) {
+    w += Number(combo & 1n);
+    combo >>= 1n;
+  }
+  return w;
+}
+
+/**
+ * Generate a puzzle and report its TRUE minimum solve length as par.
+ *
+ * The `par` argument is a difficulty knob, not the answer: we apply that many
+ * DISTINCT moves once each to a monochrome base whose colour is chosen at
+ * random. Random base matters only on odd N — there the black-cell-count parity
+ * is invariant, so a white base can only ever be re-whitened while a black base
+ * can only ever be re-blackened; tossing for it gives both white- and
+ * black-target puzzles. (On even N both colours are always reachable, so the
+ * base is cosmetic.) par is then the genuine optimum — the shorter of the
+ * solutions to all-white and all-black, whichever are reachable — so quick 2–3
+ * move boards stay possible and are labelled honestly. Limit is par+margin.
  */
 export function newGameWithPar(
   N: number,
@@ -96,14 +171,25 @@ export function newGameWithPar(
 ): GameState {
   const verts = allVertices(N);
   const k = Math.max(1, Math.min(par, verts.length));
-  let cells = createBoard(N, false);
+  const base = rng() < 0.5; // start from white or black at random
+
+  let cells = createBoard(N, base);
   for (let attempt = 0; attempt < 24; attempt++) {
-    cells = createBoard(N, false);
+    cells = createBoard(N, base);
     shuffle(verts, rng);
     for (let n = 0; n < k; n++) flip2x2(cells, N, verts[n].i, verts[n].j);
     if (!isMonochrome(cells)) break; // retry if the subset cancelled out
   }
-  return createState({ N, cells, par: k, limit: k + margin });
+
+  // Win = ANY single colour. Price both monochrome targets; par is the smaller
+  // reachable one (at least the base colour is always reachable, in k moves).
+  const pivots = movePivots(N);
+  const bm = cellsToMask(cells);
+  const allOnes = (1n << BigInt(N * N)) - 1n;
+  const toWhite = solveWeight(pivots, bm);
+  const toBlack = solveWeight(pivots, bm ^ allOnes);
+  const trueMin = Math.min(toWhite ?? Infinity, toBlack ?? Infinity);
+  return createState({ N, cells, par: trueMin, limit: trueMin + margin });
 }
 
 /** Build a fresh game state: cursor at the origin, 0 moves, unspecified fields null. */
