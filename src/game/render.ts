@@ -54,7 +54,7 @@ function ensureSkeleton(root: HTMLElement): void {
   root.innerHTML = `
     <p class="sr-only" role="status" aria-live="polite"></p>
     <header class="bar">
-      <span class="bar-title">radiant-radiation</span>
+      <span class="bar-title" data-i18n="app.title">radiant-radiation</span>
       <span class="bar-right">
         <span class="bar-meta"></span>
         <button class="bar-lang" data-action="lang" data-i18n-aria="aria.lang">EN</button>
@@ -164,15 +164,12 @@ function updateOverlays(
 function updateBarMeta(root: HTMLElement, state: GameState, view: View): void {
   const size = `${state.N}×${state.N}`;
   const metaEl = root.querySelector(".bar-meta")!;
-  if (view.mode === "tutorial" && view.step) {
-    metaEl.textContent = t("bar.tutorial", { current: view.step.current, total: view.step.total });
-  } else if (view.difficulty) {
-    // separator is a pseudo-element so it can drop the dot on mobile (where the
-    // bar is tight and "difficulty · NxN" otherwise wraps onto three lines)
-    metaEl.innerHTML = `${esc(view.difficulty)} <span class="bar-sep" aria-hidden="true"></span>${size}`;
-  } else {
-    metaEl.textContent = size;
-  }
+  // Free play shows just the grid size; the difficulty lives on the toolbar /
+  // the `d` key. Tutorial shows step progress instead.
+  metaEl.textContent =
+    view.mode === "tutorial" && view.step
+      ? t("bar.tutorial", { current: view.step.current, total: view.step.total })
+      : size;
   root.querySelector(".bar-lang")!.textContent = getLocale().toUpperCase();
 }
 

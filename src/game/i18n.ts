@@ -24,6 +24,7 @@ const LANG_KEY = "rr.lang";
 type Catalog = Record<string, string>;
 
 const en: Catalog = {
+  "app.title": "radiant-radiation",
   "keys.title": "keys",
   "action.move": "move",
   "action.flip": "flip",
@@ -94,6 +95,7 @@ const en: Catalog = {
 };
 
 const fr: Catalog = {
+  "app.title": "radiant-radiation",
   "keys.title": "touches",
   "action.move": "déplacer",
   "action.flip": "inverser",
@@ -164,6 +166,7 @@ const fr: Catalog = {
 };
 
 const es: Catalog = {
+  "app.title": "radiant-radiation",
   "keys.title": "teclas",
   "action.move": "mover",
   "action.flip": "voltear",
@@ -234,6 +237,7 @@ const es: Catalog = {
 };
 
 const ja: Catalog = {
+  "app.title": "ラディアント・ラディエーション",
   "keys.title": "キー",
   "action.move": "移動",
   "action.flip": "反転",
