@@ -799,6 +799,12 @@ body {
   .keys {
     display: none;
   }
+  /* the difficulty label is desktop-only; keep the bar meta to just the size so
+     it never wraps to a second line on narrow touch screens */
+  .bar-diff,
+  .bar-sep {
+    display: none;
+  }
   /* the tutorial tip mentions arrow keys + space, irrelevant on touch */
   .tut-keys {
     display: none;

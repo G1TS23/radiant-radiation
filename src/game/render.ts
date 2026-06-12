@@ -164,12 +164,17 @@ function updateOverlays(
 function updateBarMeta(root: HTMLElement, state: GameState, view: View): void {
   const size = `${state.N}×${state.N}`;
   const metaEl = root.querySelector(".bar-meta")!;
-  // Free play shows just the grid size; the difficulty lives on the toolbar /
-  // the `d` key. Tutorial shows step progress instead.
-  metaEl.textContent =
-    view.mode === "tutorial" && view.step
-      ? t("bar.tutorial", { current: view.step.current, total: view.step.total })
-      : size;
+  if (view.mode === "tutorial" && view.step) {
+    metaEl.textContent = t("bar.tutorial", { current: view.step.current, total: view.step.total });
+  } else if (view.difficulty) {
+    // Desktop shows "difficulty · NxN"; the label + separator are hidden on touch
+    // (CSS) so the bar stays on one line on narrow screens.
+    metaEl.innerHTML =
+      `<span class="bar-diff">${esc(view.difficulty)}</span>` +
+      `<span class="bar-sep"> · </span>${esc(size)}`;
+  } else {
+    metaEl.textContent = size;
+  }
   root.querySelector(".bar-lang")!.textContent = getLocale().toUpperCase();
 }
 
