@@ -267,12 +267,12 @@ function doMove(): void {
   const s = session.state;
   const black = s.cells.filter(Boolean).length;
   let announceMessage: string;
-  if(isWin(s)){
-    announceMessage = tn("announce.solved", s.moves)
+  if (isWin(s)) {
+    announceMessage = tn("announce.solved", s.moves);
   } else if (isLost(s)) {
-    announceMessage = t("announce.lost")
+    announceMessage = t("announce.lost");
   } else {
-    announceMessage = t("announce.count", {black, white: s.cells.length - black})
+    announceMessage = t("announce.count", { black, white: s.cells.length - black });
   }
   announce(announceMessage);
   if (flashTimer !== undefined) clearTimeout(flashTimer);
