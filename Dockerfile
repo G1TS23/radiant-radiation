@@ -1,14 +1,25 @@
 # syntax=docker/dockerfile:1
 
-# --- build stage: compile the static Astro site -----------------------------
-FROM node:22-alpine AS build
+# --- deps stage: install node_modules (shared by build & dev) ----------------
+FROM node:22-alpine AS deps
 WORKDIR /app
-
-# Install deps first (cached unless the lockfile changes).
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Build the static site to /app/dist.
+# --- dev stage: live Astro dev server with HMR (used by docker-compose.dev) --
+FROM node:22-alpine AS dev
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+EXPOSE 4321
+# --host binds 0.0.0.0 so the dev server is reachable from the host. Source is
+# bind-mounted at runtime (see docker-compose.dev.yml), so nothing else is COPYed.
+CMD ["npm", "run", "dev", "--", "--host"]
+
+# --- build stage: compile the static Astro site -----------------------------
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 

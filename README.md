@@ -76,10 +76,21 @@ npm run build      # static build -> dist/
 
 ## Docker
 
-A multi-stage build compiles the static site (`node:22-alpine`) and serves it
-with `nginx:1.27-alpine`, mirroring the production security headers.
+**Production** — a multi-stage build compiles the static site (`node:22-alpine`)
+and serves it with `nginx:1.27-alpine`, mirroring the production security headers.
 
 ```sh
 docker compose up -d --build   # build + run -> http://localhost:8080
 docker compose down            # stop
 ```
+
+**Development** — a live Astro dev server with hot module reload, source
+bind-mounted from the host (edit locally, the browser refreshes itself).
+
+```sh
+docker compose -f docker-compose.dev.yml up --build   # -> http://localhost:4321
+```
+
+The dev container polls for file changes (`CHOKIDAR_USEPOLLING`) for reliable
+watching on Docker Desktop; drop that env in `docker-compose.dev.yml` if native
+file events work on your setup.

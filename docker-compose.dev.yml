@@ -1,0 +1,23 @@
+# Development override: live Astro dev server with hot module reload.
+# Usage: docker compose -f docker-compose.dev.yml up   ->  http://localhost:4321
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    image: radiant-radiation-dev
+    container_name: radiant-radiation-dev
+    ports:
+      - "4321:4321"
+    volumes:
+      # Live source from the host...
+      - .:/app
+      # ...but keep the image's node_modules (anonymous volume shadows the host).
+      - /app/node_modules
+    environment:
+      # Reliable file-watching on Docker Desktop (Mac/Windows). Drop these if
+      # native fsevents work for you (lighter on CPU).
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=300
+    restart: unless-stopped
