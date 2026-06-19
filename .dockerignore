@@ -1,0 +1,23 @@
+# build artifacts & deps — rebuilt inside the image
+node_modules
+dist
+.astro
+
+# vcs / editor / os
+.git
+.gitignore
+.idea
+.DS_Store
+
+# docker itself
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# logs & env
+npm-debug.log*
+.env
+.env.*
+
+# personal notes (already gitignored)
+launch-plan.md
