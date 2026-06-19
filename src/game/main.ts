@@ -75,7 +75,7 @@ function cancelAutoAdvance(): void {
 
 function scheduleAutoAdvance(): void {
   cancelAutoAdvance();
-  advanceTimer = window.setTimeout(() => {
+  advanceTimer = globalThis.setTimeout(() => {
     advanceTimer = undefined;
     advance();
   }, AUTO_ADVANCE_MS);
@@ -274,7 +274,7 @@ function doMove(): void {
         : t("announce.count", { black, white: s.cells.length - black }),
   );
   if (flashTimer !== undefined) clearTimeout(flashTimer);
-  flashTimer = window.setTimeout(() => {
+  flashTimer = globalThis.setTimeout(() => {
     flash = null;
     draw();
   }, 240);
