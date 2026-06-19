@@ -115,8 +115,6 @@ taking part. Found a security issue? See the
 Created & maintained by **[Olivier Falahi](https://github.com/G1TS23)**
 ([olivier.falahi@gmail.com](mailto:olivier.falahi@gmail.com)).
 
-[![Contributors](https://contrib.rocks/image?repo=G1TS23/radiant-radiation)](https://github.com/G1TS23/radiant-radiation/graphs/contributors)
-
 Built with assistance from Claude (Anthropic); dependencies kept current by
 Dependabot.
 
