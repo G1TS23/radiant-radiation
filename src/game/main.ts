@@ -81,7 +81,7 @@ function scheduleAutoAdvance(): void {
   }, AUTO_ADVANCE_MS);
 }
 
-/** Deep-ish copy of a state (the only mutable part is the cells array). */
+/** Deep-ish copy of a state (the only mutable part is the cell array). */
 function snapshot(s: GameState): GameState {
   return { ...s, cells: s.cells.slice(), cursor: { ...s.cursor } };
 }
@@ -109,7 +109,7 @@ function startFree(diff: number): void {
   cancelAutoAdvance();
   const d = DIFFICULTIES[diff];
   // Don't hand out a board we've already seen: the previous one always, plus any
-  // of this size already in the history panel. Easy's pool is small (~138) but
+  // of this size yet in the history panel. Easy's pool is small (~138) but
   // history caps at 20, so ~118 fresh boards always remain — no risk of running
   // out. The bounded retry degrades gracefully (just returns a board) if it did.
   const avoid = new Set<string>();
@@ -555,7 +555,7 @@ function boot(): void {
 
 /** Pick the first screen: deep link, then tutorial, then resume / fresh game. */
 function startInitialGame(): void {
-  // Deep link: ?d=hard starts free play directly at that difficulty.
+  // Deep link: `?d=hard` starts free play directly at that difficulty.
   const dParam = new URLSearchParams(location.search).get("d");
   if (dParam !== null) {
     const idx = DIFFICULTIES.findIndex((x) => x.id === dParam);

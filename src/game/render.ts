@@ -5,7 +5,7 @@
  * The skeleton (title bar, board, HUD, key hints) is built once and then patched.
  *
  * Layout: cells live in `.grid` (auto-placed). The cursor/hint frames live in a
- * separate, absolutely-positioned `.overlay` that mirrors the grid's template
+ * separate, absolutely positioned `.overlay` that mirrors the grid's template
  * and gap. Keeping the frames OUT of the cell grid is essential — an explicitly
  * placed grid item is positioned before auto-placed ones, which would otherwise
  * push the cells out of the block it covers. The overlay is `pointer-events:none`
@@ -27,7 +27,7 @@ export interface View {
   message?: string;
   /** Recommended move to highlight, if any. */
   hint?: Vertex | null;
-  /** Tutorial progress, e.g. step 1 of 2. */
+  /** Tutorial progress, e.g., step 1 of 2. */
   step?: { current: number; total: number };
   /** 2x2 to briefly flash after a move (touch feedback). */
   flash?: Vertex | null;
@@ -47,7 +47,7 @@ const ESC: Record<string, string> = {
 };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ESC[c]);
 
-/** Build the static skeleton once; subsequent calls reuse it. */
+/** Build the static skeleton once; later calls reuse it. */
 function ensureSkeleton(root: HTMLElement): void {
   if (root.querySelector(".board")) return;
   root.classList.add("cli");
@@ -137,7 +137,7 @@ function updateCells(
       cell.classList.toggle("flash", inFlash);
     }
   }
-  // Flip-point markers (touch): colour each quadrant with the INVERSE of the
+  // Flip-point markers (touch): color each quadrant with the INVERSE of the
   // cell under it — a live preview of what tapping this intersection produces.
   const inv = (x: number, y: number): string =>
     cellsArr[index(N, x, y)] ? "var(--cell-off)" : "var(--cell-on)";
@@ -195,7 +195,7 @@ function updateStatusAndClasses(
   const won = isWin(state);
   const lost = isLost(state);
 
-  // On a win, melt the grid lines into the winning colour so the board becomes
+  // On a win, melt the grid lines into the winning color so the board becomes
   // one solid surface — but keep the border as a frame around it.
   const winColor = state.cells[0] ? "var(--cell-on)" : "var(--cell-off)";
   grid.style.backgroundColor = won ? winColor : "";

@@ -1,13 +1,13 @@
 /**
  * tutorial.ts — scripted onboarding steps.
  *
- * Tutorial boards are FIXED (never scrambled) so the instructions and hints can
+ * Tutorial boards are FIXED (never scrambled), so the instructions and hints can
  * be precise. The engine logic is reused as-is; the tutorial only adds the idea
  * of a fixed starting board, an imposed target color, and a recommended move.
  *
  * The tutorial starts directly on 3x3 boards: small enough to read instantly,
  * but large enough for overlapping 2x2 flips to matter. The first two steps are
- * guided; the last step removes the hint and lets the player solve freely.
+ * guided; the last step removes the hint and lets the player solve the puzzle freely.
  * Win = any single color.
  */
 
@@ -28,7 +28,7 @@ export interface TutorialStep {
   /**
    * The exact move sequence that solves the step. The current move (solution
    * [movesMade]) is highlighted and enforced when guided = true. Unguided steps
-   * still keep a solution here so tests can validate the scripted board.
+   * still keep a solution here, so tests can validate the scripted board.
    */
   solution: Vertex[];
 }
