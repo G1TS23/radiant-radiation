@@ -32,15 +32,15 @@ npm run build         # static build -> dist/
 
 The game logic is pure and DOM-free, kept separate from rendering and wiring:
 
-| File | Responsibility |
-| ---- | -------------- |
-| `src/game/engine.ts` | pure game logic & puzzle generation (no DOM) |
-| `src/game/render.ts` | idempotent DOM rendering |
-| `src/game/input.ts` | keyboard / pointer input |
-| `src/game/view-model.ts` | pure session → view mapping |
-| `src/game/main.ts` | orchestration (wires it together) |
-| `src/game/history.ts` | `localStorage` persistence |
-| `src/game/i18n.ts` | dependency-free runtime translations |
+| File                     | Responsibility                               |
+| ------------------------ | -------------------------------------------- |
+| `src/game/engine.ts`     | pure game logic & puzzle generation (no DOM) |
+| `src/game/render.ts`     | idempotent DOM rendering                     |
+| `src/game/input.ts`      | keyboard / pointer input                     |
+| `src/game/view-model.ts` | pure session → view mapping                  |
+| `src/game/main.ts`       | orchestration (wires it together)            |
+| `src/game/history.ts`    | `localStorage` persistence                   |
+| `src/game/i18n.ts`       | dependency-free runtime translations         |
 
 Guidelines:
 
