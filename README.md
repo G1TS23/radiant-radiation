@@ -102,6 +102,24 @@ The dev container polls for file changes (`CHOKIDAR_USEPOLLING`) for reliable
 watching on Docker Desktop; drop that env in `docker-compose.dev.yml` if native
 file events work on your setup.
 
+## Contributing
+
+Contributions are welcome! Please read the
+[contributing guide](./.github/CONTRIBUTING.md) to get set up and learn the
+checks to run, and the [code of conduct](./.github/CODE_OF_CONDUCT.md) before
+taking part. Found a security issue? See the
+[security policy](./.github/SECURITY.md) — please don't open a public issue.
+
+## Contributors
+
+Created & maintained by **[Olivier Falahi](https://github.com/G1TS23)**
+([olivier.falahi@gmail.com](mailto:olivier.falahi@gmail.com)).
+
+[![Contributors](https://contrib.rocks/image?repo=G1TS23/radiant-radiation)](https://github.com/G1TS23/radiant-radiation/graphs/contributors)
+
+Built with assistance from Claude (Anthropic); dependencies kept current by
+Dependabot.
+
 ## License
 
 [MIT](./LICENSE) © 2026 Olivier Falahi
