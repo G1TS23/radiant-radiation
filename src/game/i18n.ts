@@ -36,6 +36,7 @@ const en: Catalog = {
   "action.zen": "zen mode",
   "action.skip": "skip",
   "action.history": "history",
+  "action.historyStats": "history & stats",
 
   "hud.moves": "moves:",
   "hud.par": "par:",
@@ -63,6 +64,18 @@ const en: Catalog = {
 
   "history.empty": "no games yet",
   "history.clear": "clear history",
+
+  "stats.title": "stats",
+  "stats.played": "played",
+  "stats.won": "won",
+  "stats.streak": "streak",
+  "stats.bestStreak": "best streak",
+  "stats.avgMoves": "avg moves",
+  "stats.atPar": "at par",
+  "stats.time": "time",
+  "stats.bestTime": "best time",
+  "stats.clear": "clear stats",
+
   "result.won": "won",
   "result.lost": "lost",
   "aria.replay": "replay {diff} game, {result} in {moves} of {limit} moves",
@@ -109,6 +122,7 @@ const fr: Catalog = {
   "action.zen": "mode zen",
   "action.skip": "passer",
   "action.history": "historique",
+  "action.historyStats": "historique & stats",
 
   "hud.moves": "coups :",
   "hud.par": "par :",
@@ -136,6 +150,18 @@ const fr: Catalog = {
 
   "history.empty": "aucune partie",
   "history.clear": "effacer l'historique",
+
+  "stats.title": "stats",
+  "stats.played": "jouées",
+  "stats.won": "gagnées",
+  "stats.streak": "série",
+  "stats.bestStreak": "meilleure série",
+  "stats.avgMoves": "coups moy.",
+  "stats.atPar": "au par",
+  "stats.time": "temps",
+  "stats.bestTime": "meilleur temps",
+  "stats.clear": "effacer les stats",
+
   "result.won": "gagnée",
   "result.lost": "perdue",
   "aria.replay": "rejouer la partie {diff}, {result} en {moves} sur {limit} coups",
@@ -182,6 +208,7 @@ const es: Catalog = {
   "action.zen": "modo zen",
   "action.skip": "saltar",
   "action.history": "historial",
+  "action.historyStats": "historial y estadísticas",
 
   "hud.moves": "movs:",
   "hud.par": "par:",
@@ -209,6 +236,18 @@ const es: Catalog = {
 
   "history.empty": "aún no hay partidas",
   "history.clear": "borrar historial",
+
+  "stats.title": "estadísticas",
+  "stats.played": "jugadas",
+  "stats.won": "ganadas",
+  "stats.streak": "racha",
+  "stats.bestStreak": "mejor racha",
+  "stats.avgMoves": "movs medios",
+  "stats.atPar": "en par",
+  "stats.time": "tiempo",
+  "stats.bestTime": "mejor tiempo",
+  "stats.clear": "borrar estadísticas",
+
   "result.won": "ganada",
   "result.lost": "perdida",
   "aria.replay": "repetir partida {diff}, {result} en {moves} de {limit} movimientos",
@@ -255,6 +294,7 @@ const ja: Catalog = {
   "action.zen": "禅モード",
   "action.skip": "スキップ",
   "action.history": "履歴",
+  "action.historyStats": "履歴と統計",
 
   "hud.moves": "手数:",
   "hud.par": "パー:",
@@ -282,6 +322,18 @@ const ja: Catalog = {
 
   "history.empty": "まだ記録がありません",
   "history.clear": "履歴を消去",
+
+  "stats.title": "統計",
+  "stats.played": "プレイ数",
+  "stats.won": "勝利",
+  "stats.streak": "連勝",
+  "stats.bestStreak": "最高連勝",
+  "stats.avgMoves": "平均手数",
+  "stats.atPar": "パー達成",
+  "stats.time": "時間",
+  "stats.bestTime": "最速時間",
+  "stats.clear": "統計を消去",
+
   "result.won": "クリア",
   "result.lost": "失敗",
   "aria.replay": "{diff}のゲームを再挑戦、{limit}手中{moves}手で{result}",

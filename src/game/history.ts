@@ -27,6 +27,7 @@ export interface SavedGame {
   diff: number;
   replay?: boolean; // a replayed puzzle (practice), not recorded again on finish
   replayOf?: number; // timestamp of the record being replayed, for in-place improvement
+  elapsedMs?: number; // accumulated active play time, so a reload resumes the clock
 }
 
 const HISTORY_KEY = "rr.history";
@@ -154,7 +155,8 @@ export function loadGame(): SavedGame | null {
     const diff = int(v?.diff, 0, 99);
     if (!state || !initial || diff === null) return null;
     const replayOf = v.replayOf === undefined ? undefined : (int(v.replayOf) ?? undefined);
-    return { state, initial, diff, replay: v.replay === true, replayOf };
+    const elapsedMs = v.elapsedMs === undefined ? undefined : (int(v.elapsedMs) ?? undefined);
+    return { state, initial, diff, replay: v.replay === true, replayOf, elapsedMs };
   } catch {
     return null;
   }
