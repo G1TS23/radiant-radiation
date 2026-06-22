@@ -53,6 +53,10 @@ history panel becomes a collapsible accordion.
 - Games history (result, moves, difficulty, board preview) with replay, persisted
   in `localStorage`; the in-progress game is autosaved and resumed on reload.
   Replaying a board in fewer moves upgrades its recorded result.
+- Lifetime stats panel (games played, win rate, current/best streak, average
+  moves, par finishes, total and best solve time) — cumulative beyond the
+  20-game history cap. Solve time is the active time from the first move (paused
+  while the tab is hidden). History and stats clear independently.
 - Localized in **English, French, Spanish, Japanese** — auto-detected, switchable
   at runtime, and remembered (the Japanese title renders in katakana).
 - Soft light/dark themes (follows `prefers-color-scheme`); a distraction-free
@@ -67,8 +71,8 @@ Deep link: `?d=easy|normal|hard|expert` starts free play at that difficulty.
 Astro 6 + TypeScript (no UI framework). Pure game logic in `src/game/engine.ts`,
 idempotent rendering in `render.ts`, input in `input.ts`, orchestration in
 `main.ts`, the pure session→view mapping in `view-model.ts`, persistence in
-`history.ts`, and dependency-free runtime i18n in `i18n.ts`. Static build,
-deployed on Netlify.
+`history.ts`, lifetime stats in `stats.ts`, and dependency-free runtime i18n in
+`i18n.ts`. Static build, deployed on Netlify.
 
 ## Develop
 

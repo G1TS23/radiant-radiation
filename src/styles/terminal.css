@@ -693,6 +693,11 @@ body {
   top: 0;
   color: var(--dim);
 }
+/* desktop default: the head reads "history" (the stats block sits right below,
+   self-labelled); the combined "history & stats" label is swapped in on touch */
+.head-history-stats {
+  display: none;
+}
 .hist-empty {
   color: var(--dim);
   margin: 0;
@@ -776,6 +781,48 @@ body {
     border-color 0.12s ease;
 }
 .hist-clear:hover {
+  color: var(--fg);
+  border-color: var(--dim);
+}
+
+/* --- lifetime stats (top of the history panel) --- */
+.stats {
+  flex: 0 0 auto; /* stays put above the scrolling history list */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+}
+.stat-k {
+  color: var(--dim);
+}
+.stat-v {
+  color: var(--fg);
+}
+.stats-clear {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: 8px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.95em;
+  padding: 4px 9px;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.stats-clear:hover {
   color: var(--fg);
   border-color: var(--dim);
 }
@@ -920,6 +967,13 @@ body {
   }
   .hist-chevron::after {
     content: "▾"; /* the sheet header — tap to dismiss */
+  }
+  /* the sheet hides the stats until opened, so name them in the header */
+  .head-history {
+    display: none;
+  }
+  .head-history-stats {
+    display: inline;
   }
   .hist-body {
     flex: 1 1 auto;

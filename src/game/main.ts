@@ -34,6 +34,7 @@ import {
   type GameRecord,
   type SavedGame,
 } from "./history";
+import { loadStats, recordStat, clearStats, type Stats } from "./stats";
 import { getItem as readStorage, setItem as writeStorage } from "./storage";
 import { computeView, tutorialExpected, type Session } from "./view-model";
 import {
@@ -57,6 +58,7 @@ const ZEN_KEY = "rr.zen";
 let root: HTMLElement;
 let historyPanel: HTMLElement | null;
 let historyEntries: GameRecord[] = [];
+let statsData: Stats;
 let session: Session;
 let zenOn = false; // zen mode: only the grid on screen (free play only)
 let flash: Vertex | null = null; // 2x2 to flash after a move (touch feedback)
@@ -89,6 +91,36 @@ function snapshot(s: GameState): GameState {
 /** Compact identity of a board, for the "don't repeat in a row" guard. */
 const boardKey = (cells: boolean[]): string => cells.map((c) => (c ? "1" : "0")).join("");
 let lastBoardKey: string | null = null; // the previous puzzle's starting board
+
+// --- play timer ------------------------------------------------------------
+// Active solve time: runs from the first move to game over, accumulates across
+// reloads (persisted with the autosave), and pauses while the tab is hidden so
+// a game left open in the background doesn't inflate the duration.
+const timer = { elapsedMs: 0, segStart: 0, running: false, started: false };
+
+function timerReset(elapsed: number): void {
+  timer.elapsedMs = elapsed;
+  timer.segStart = 0;
+  timer.running = false;
+  timer.started = elapsed > 0; // a resumed game has already started counting
+}
+/** Begin (or resume) counting. Idempotent — calling it mid-segment is a no-op. */
+function timerGo(): void {
+  if (timer.running) return;
+  timer.running = true;
+  timer.started = true;
+  timer.segStart = Date.now();
+}
+/** Pause counting, folding the open segment into the accumulated total. */
+function timerHold(): void {
+  if (!timer.running) return;
+  timer.elapsedMs += Date.now() - timer.segStart;
+  timer.running = false;
+}
+/** Total active time so far (including any open segment). */
+function timerValue(): number {
+  return timer.elapsedMs + (timer.running ? Date.now() - timer.segStart : 0);
+}
 
 // --- persistence -----------------------------------------------------------
 
@@ -130,6 +162,7 @@ function startFree(diff: number): void {
     replay: false,
   };
   writeStorage(DIFFICULTY_KEY, String(diff));
+  timerReset(0);
   draw();
   announce(t("announce.new", { diff: t("difficulty." + d.id), n: d.N }));
 }
@@ -147,6 +180,7 @@ function startTutorial(index: number): void {
     diff: session?.diff ?? loadDifficulty(),
     replay: false,
   };
+  timerReset(0);
   draw();
   announce(`${t(step.title)}. ${t(step.instruction)}`);
 }
@@ -180,6 +214,7 @@ function restoreGame(saved: SavedGame): void {
     replayOf: saved.replayOf,
   };
   lastBoardKey = boardKey(saved.initial.cells);
+  timerReset(saved.elapsedMs ?? 0);
   draw();
 }
 
@@ -198,17 +233,19 @@ function replayRecord(rec: GameRecord): void {
     replayOf: rec.t,
   };
   lastBoardKey = boardKey(rec.cells); // next fresh puzzle won't repeat this one
+  timerReset(0);
   draw();
   announce(t("announce.replay", { diff: t("difficulty." + DIFFICULTIES[rec.diff].id), n: rec.N }));
 }
 
-/** Record the just-finished free-play game into the history panel. */
-function recordCurrent(): void {
+/** Record the just-finished free-play game into the history panel + lifetime stats. */
+function recordCurrent(ms: number): void {
   const s = session.state;
   if (session.mode !== "free" || s.par === null || s.limit === null) return;
   clearGame(); // the game is over; nothing in-progress to resume
   if (session.replay) {
-    // Replays aren't re-recorded, but a better run upgrades the original entry.
+    // Replays aren't re-recorded (and don't count toward stats), but a better
+    // run still upgrades the original history entry.
     if (isWin(s) && session.replayOf !== undefined) {
       const { list, improved } = improveRecord(session.replayOf, s.moves);
       if (improved) {
@@ -218,17 +255,19 @@ function recordCurrent(): void {
     }
     return;
   }
+  const won = isWin(s);
   historyEntries = addRecord({
     t: Date.now(),
     diff: session.diff,
     diffLabel: DIFFICULTIES[session.diff].label,
     N: s.N,
-    result: isWin(s) ? "won" : "lost",
+    result: won ? "won" : "lost",
     moves: s.moves,
     par: s.par,
     limit: s.limit,
     cells: session.initial.cells.slice(),
   });
+  statsData = recordStat({ won, moves: s.moves, par: s.par, ms, diff: session.diff });
   drawHistory();
 }
 
@@ -255,10 +294,12 @@ function moveAllowed(v: Vertex): boolean {
 
 /** Apply the move under the cursor, briefly flashing the 4 flipped cells. */
 function doMove(): void {
+  if (session.mode === "free") timerGo(); // start the clock on the first move
   session.history.push(snapshot(session.state));
   session.state = applyMoveAtCursor(session.state);
   if (isOver(session.state)) {
-    recordCurrent();
+    timerHold();
+    recordCurrent(timerValue());
     // In free play, auto-advance to the next puzzle a few seconds after a win.
     if (session.mode === "free" && isWin(session.state)) scheduleAutoAdvance();
   }
@@ -380,6 +421,7 @@ function draw(): void {
       diff: session.diff,
       replay: session.replay,
       replayOf: session.replayOf,
+      elapsedMs: timerValue(),
     });
   }
 }
@@ -392,9 +434,11 @@ function announce(msg: string): void {
 
 function drawHistory(): void {
   if (!historyPanel) return;
-  renderHistory(historyPanel, historyEntries);
-  // Reveal the panel (and its balancing spacer) only once a game has finished.
-  historyPanel.parentElement?.classList.toggle("has-history", historyEntries.length > 0);
+  renderHistory(historyPanel, historyEntries, statsData);
+  // Reveal the panel (and its balancing spacer) once there's anything to show —
+  // a finished game, or lifetime stats that outlive a cleared history.
+  const hasContent = historyEntries.length > 0 || statsData.played > 0;
+  historyPanel.parentElement?.classList.toggle("has-history", hasContent);
 }
 
 /** Toggle the collapsible history panel (touch layout). */
@@ -529,9 +573,17 @@ function boot(): void {
     }
   });
 
-  // History panel: render saved games and wire replay / clear.
+  // Pause/resume the play clock with tab visibility so background time doesn't
+  // count; resume only if the current game is in progress and already started.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) timerHold();
+    else if (session?.mode === "free" && timer.started && !isOver(session.state)) timerGo();
+  });
+
+  // History panel: render saved games + lifetime stats, wire replay / clear.
   historyPanel = document.getElementById("history");
   historyEntries = loadHistory();
+  statsData = loadStats();
   drawHistory();
   // Tapping the backdrop closes the mobile history bottom sheet.
   document.querySelector(".hist-backdrop")?.addEventListener("click", toggleHistory);
@@ -543,6 +595,11 @@ function boot(): void {
     }
     if (target.closest(".hist-clear")) {
       historyEntries = clearHistory();
+      drawHistory();
+      return;
+    }
+    if (target.closest(".stats-clear")) {
+      statsData = clearStats();
       drawHistory();
       return;
     }

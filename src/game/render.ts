@@ -15,6 +15,7 @@
 import { index, isWin, isLost, DIFFICULTIES, type GameState, type Vertex } from "./engine";
 import { t, getLocale } from "./i18n";
 import type { GameRecord } from "./history";
+import type { Stats } from "./stats";
 
 export interface View {
   /** Free play vs. tutorial — drives the title bar and HUD copy. */
@@ -88,7 +89,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <button class="free-only" data-action="diff"></button>
       <button class="tut-only" data-action="skip" data-i18n="action.skip"></button>
     </nav>
-    <button class="hist-trigger" data-action="hist" data-i18n="action.history"></button>
+    <button class="hist-trigger" data-action="hist" data-i18n="action.historyStats"></button>
     `;
 }
 
@@ -281,19 +282,61 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
   updateCTA(root, view);
 }
 
+/** Format a duration in ms as M:SS, or H:MM:SS past an hour. Locale-neutral. */
+function fmtDuration(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
+}
+
+/** Lifetime stats block shown at the top of the history panel (when non-empty). */
+function renderStats(s: Stats): string {
+  const winRate = s.played > 0 ? Math.round((s.won / s.played) * 100) : 0;
+  const avgMoves = s.won > 0 ? (s.movesWon / s.won).toFixed(1) : "–";
+  const bestTime = s.bestSolveMs === null ? "–" : fmtDuration(s.bestSolveMs);
+  const item = (k: string, v: string): string =>
+    `<div class="stat"><span class="stat-k">${esc(t(k))}</span>` +
+    `<span class="stat-v">${esc(v)}</span></div>`;
+  return (
+    `<section class="stats" aria-label="${esc(t("stats.title"))}">` +
+    item("stats.played", String(s.played)) +
+    item("stats.won", `${s.won} · ${winRate}%`) +
+    item("stats.streak", String(s.curStreak)) +
+    item("stats.bestStreak", String(s.bestStreak)) +
+    item("stats.avgMoves", String(avgMoves)) +
+    item("stats.atPar", String(s.atParWins)) +
+    item("stats.time", fmtDuration(s.totalPlayMs)) +
+    item("stats.bestTime", bestTime) +
+    `<button class="stats-clear" type="button">${esc(t("stats.clear"))}</button>` +
+    `</section>`
+  );
+}
+
 /**
  * Render the side history panel. The head doubles as an accordion toggle on
  * touch (it carries a chevron); the body collapses there. Rows carry data-index
- * for replay wiring.
+ * for replay wiring. Lifetime stats sit between the head and the list, so they
+ * stay put while the list scrolls and survive an empty (cleared) history.
  */
-export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
+export function renderHistory(panel: HTMLElement, entries: GameRecord[], stats: Stats): void {
+  // Two labels, swapped by CSS: desktop shows "history" (the stats block is
+  // visibly labelled beside it); touch shows "history & stats" since the panel
+  // is a collapsed sheet where the stats aren't visible until it's opened.
   const head =
     `<button class="hist-head" type="button" aria-label="${esc(t("aria.history"))}">` +
-    `${esc(t("action.history"))}<span class="hist-chevron" aria-hidden="true"></span></button>`;
+    `<span class="head-history">${esc(t("action.history"))}</span>` +
+    `<span class="head-history-stats">${esc(t("action.historyStats"))}</span>` +
+    `<span class="hist-chevron" aria-hidden="true"></span></button>`;
+  const statsBlock = stats.played > 0 ? renderStats(stats) : "";
 
   if (entries.length === 0) {
     panel.innerHTML =
-      head + `<div class="hist-body"><p class="hist-empty">${esc(t("history.empty"))}</p></div>`;
+      head +
+      statsBlock +
+      `<div class="hist-body"><p class="hist-empty">${esc(t("history.empty"))}</p></div>`;
     return;
   }
 
@@ -330,6 +373,7 @@ export function renderHistory(panel: HTMLElement, entries: GameRecord[]): void {
 
   panel.innerHTML =
     head +
+    statsBlock +
     `<div class="hist-body"><ul class="hist-list">${rows}</ul></div>` +
     `<button class="hist-clear">${esc(t("history.clear"))}</button>`;
 }

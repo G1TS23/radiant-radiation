@@ -39,7 +39,8 @@ The game logic is pure and DOM-free, kept separate from rendering and wiring:
 | `src/game/input.ts`      | keyboard / pointer input                     |
 | `src/game/view-model.ts` | pure session → view mapping                  |
 | `src/game/main.ts`       | orchestration (wires it together)            |
-| `src/game/history.ts`    | `localStorage` persistence                   |
+| `src/game/history.ts`    | `localStorage` persistence (history + save)  |
+| `src/game/stats.ts`      | lifetime aggregate statistics                |
 | `src/game/i18n.ts`       | dependency-free runtime translations         |
 
 Guidelines:

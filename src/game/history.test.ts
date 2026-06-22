@@ -116,6 +116,10 @@ describe("in-progress autosave", () => {
     clearGame();
     expect(loadGame()).toBeNull();
   });
+  it("round-trips the play clock (elapsedMs) so a reload resumes timing", () => {
+    saveGame({ ...saved(), elapsedMs: 45_000 });
+    expect(loadGame()?.elapsedMs).toBe(45_000);
+  });
   it("returns null for a malformed save", () => {
     localStorage.setItem("rr.save", JSON.stringify({ nope: 1 }));
     expect(loadGame()).toBeNull();
