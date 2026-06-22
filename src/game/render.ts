@@ -34,6 +34,8 @@ export interface View {
   flash?: Vertex | null;
   /** Contextual primary button (next / retry / continue), shown when relevant. */
   cta?: { label: string; action: string; loading?: boolean } | null;
+  /** Current win streak to surface for momentum; null hides the line. */
+  streak?: { count: number; pulse: boolean } | null;
 }
 
 const PAD = (n: number): string => String(n).padStart(3, "0");
@@ -81,6 +83,7 @@ function ensureSkeleton(root: HTMLElement): void {
       <span class="hud-moves"></span>
       <span class="hud-par"></span>
       <span class="hud-status"></span>
+      <span class="hud-streak" aria-live="polite"></span>
     </div>
     <nav class="toolbar" aria-label="controls">
       <button data-action="undo" data-i18n="action.undo"></button>
@@ -236,6 +239,38 @@ function updateToolbarDiff(root: HTMLElement, view: View): void {
     : t("action.difficulty");
 }
 
+const PAD2 = (n: number): string => String(n).padStart(2, "0");
+const STREAK_MARKS_CAP = 10; // marks stop growing past this; the count still climbs
+
+/**
+ * The win-streak momentum line. Rebuilt only when the count (or visibility)
+ * changes, so the per-move flash re-render can't re-trigger the pulse — the new
+ * mark animates exactly once, when the streak actually grows.
+ */
+function updateStreak(root: HTMLElement, view: View): void {
+  const el = root.querySelector<HTMLElement>(".hud-streak")!;
+  const s = view.streak ?? null;
+  const key = s ? String(s.count) : "";
+  if (el.dataset.key === key) return; // unchanged — leave the DOM (and animation) be
+  el.dataset.key = key;
+  if (!s) {
+    el.classList.remove("show");
+    el.replaceChildren();
+    return;
+  }
+  const shown = Math.min(s.count, STREAK_MARKS_CAP);
+  let marks = "";
+  for (let i = 0; i < shown; i++) {
+    const last = i === shown - 1;
+    marks += `<span class="mark${last && s.pulse ? " pulse" : ""}">▮</span>`;
+  }
+  el.innerHTML =
+    `<span class="streak-label">${esc(t("stats.streak"))}</span>` +
+    `<span class="streak-marks" aria-hidden="true">${marks}</span>` +
+    `<span class="streak-n">${PAD2(s.count)}</span>`;
+  el.classList.add("show");
+}
+
 function updateCTA(root: HTMLElement, view: View): void {
   const cta = root.querySelector<HTMLButtonElement>(".cta")!;
   if (view.cta) {
@@ -280,6 +315,9 @@ export function render(root: HTMLElement, state: GameState, view: View): void {
 
   // Contextual CTA
   updateCTA(root, view);
+
+  // Win-streak momentum line
+  updateStreak(root, view);
 }
 
 /** Format a duration in ms as M:SS, or H:MM:SS past an hour. Locale-neutral. */

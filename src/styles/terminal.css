@@ -394,6 +394,52 @@ body {
   font-weight: 600;
   margin-left: auto;
 }
+/* win-streak momentum: its own line below moves/par (forced by flex-basis) */
+.hud-streak {
+  display: none;
+  flex: 0 0 100%;
+  align-items: center;
+  gap: 8px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+.hud-streak.show {
+  display: flex;
+}
+.streak-marks {
+  display: inline-flex;
+  gap: 3px;
+}
+.hud-streak .mark {
+  color: var(--accent);
+}
+.streak-n {
+  color: var(--fg);
+}
+.hud-streak .mark.pulse {
+  display: inline-block;
+  transform-origin: center;
+  animation: streak-pulse 0.45s ease-out;
+}
+@keyframes streak-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  45% {
+    transform: scale(1.55);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-streak .mark.pulse {
+    animation: none;
+  }
+}
 
 /* --- tutorial: clean, focused, text above the grid --- */
 .tut-text {

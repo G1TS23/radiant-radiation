@@ -63,6 +63,7 @@ let session: Session;
 let zenOn = false; // zen mode: only the grid on screen (free play only)
 let flash: Vertex | null = null; // 2x2 to flash after a move (touch feedback)
 let flashTimer: number | undefined;
+let streakPulse = false; // pulse the new streak mark on the render right after a win
 let advanceTimer: number | undefined; // auto-advance to the next puzzle after a win
 
 /** Delay before the next puzzle appears automatically after a win. */
@@ -139,6 +140,7 @@ function loadDifficulty(): number {
 
 function startFree(diff: number): void {
   cancelAutoAdvance();
+  streakPulse = false; // the streak persists into the new puzzle, but doesn't re-pulse
   const d = DIFFICULTIES[diff];
   // Don't hand out a board we've already seen: the previous one always, plus any
   // of this size yet in the history panel. Easy's pool is small (~138) but
@@ -299,9 +301,12 @@ function doMove(): void {
   session.state = applyMoveAtCursor(session.state);
   if (isOver(session.state)) {
     timerHold();
-    recordCurrent(timerValue());
+    recordCurrent(timerValue()); // updates statsData.curStreak
     // In free play, auto-advance to the next puzzle a few seconds after a win.
-    if (session.mode === "free" && isWin(session.state)) scheduleAutoAdvance();
+    if (session.mode === "free" && isWin(session.state)) {
+      streakPulse = true; // the new streak mark pulses on this render
+      scheduleAutoAdvance();
+    }
   }
   flash = { ...session.state.cursor };
   draw();
@@ -410,8 +415,15 @@ const handlers: InputHandlers = {
 
 // --- view + render ---------------------------------------------------------
 
+/** The streak to surface: free play only, from 2 wins in a row (else hidden). */
+function streakView(): { count: number; pulse: boolean } | null {
+  if (session.mode !== "free") return null;
+  const count = statsData?.curStreak ?? 0;
+  return count >= 2 ? { count, pulse: streakPulse } : null;
+}
+
 function draw(): void {
-  render(root, session.state, computeView(session, flash));
+  render(root, session.state, computeView(session, flash, streakView()));
   applyZen(); // keep the zen class in sync with the mode on every transition
   // Autosave only an in-progress free-play game (finished games go to history).
   if (session.mode === "free" && !isOver(session.state)) {

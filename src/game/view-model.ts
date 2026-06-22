@@ -31,7 +31,11 @@ export function tutorialExpected(session: Session): Vertex | null {
 }
 
 /** Pure mapping from the current session to the render View. */
-export function computeView(session: Session, flash: Vertex | null): View {
+export function computeView(
+  session: Session,
+  flash: Vertex | null,
+  streak: View["streak"] = null,
+): View {
   const s = session.state;
   const won = isWin(s);
 
@@ -47,6 +51,7 @@ export function computeView(session: Session, flash: Vertex | null): View {
       hint: tutorialExpected(session),
       flash,
       cta: won ? { label: t(isLast ? "cta.start" : "cta.continue"), action: "next" } : null,
+      streak: null, // no streak chrome during the tutorial
     };
   }
 
@@ -63,5 +68,6 @@ export function computeView(session: Session, flash: Vertex | null): View {
     hint: null,
     flash,
     cta,
+    streak,
   };
 }

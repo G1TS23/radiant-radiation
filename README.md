@@ -57,6 +57,8 @@ history panel becomes a collapsible accordion.
   moves, par finishes, total and best solve time) — cumulative beyond the
   20-game history cap. Solve time is the active time from the first move (paused
   while the tab is hidden). History and stats clear independently.
+- Win-streak momentum line under the board (from two wins in a row): one mark
+  per win, the newest pulsing as the streak grows; a loss clears it.
 - Localized in **English, French, Spanish, Japanese** — auto-detected, switchable
   at runtime, and remembered (the Japanese title renders in katakana).
 - Soft light/dark themes (follows `prefers-color-scheme`); a distraction-free
