@@ -65,6 +65,9 @@ const canonical = new URL("/", site).href;
   body {
     margin: 0;
     width: 100%;
-    height: 100%;
+    /* min-height (not height) so the body can grow past the viewport and scroll
+       when the layout stacks on a narrow desktop window; the touch/mobile rules
+       re-pin a fixed height for the bottom-sheet layout. */
+    min-height: 100%;
   }
 </style>
