@@ -76,7 +76,10 @@ body {
     background-color 0.18s ease,
     color 0.18s ease;
   display: flex;
-  align-items: center;
+  /* "safe" centering: centred when it fits, but falls back to top-aligned when
+     the (stacked, narrow-desktop) content is taller than the viewport, so the
+     overflow stays reachable by scrolling instead of being clipped above. */
+  align-items: safe center;
   justify-content: center;
   min-height: 100vh;
   padding: clamp(12px, 4vw, 32px);
@@ -873,8 +876,11 @@ body {
   border-color: var(--dim);
 }
 
-/* stack the panel under the board on narrow screens */
-@media (max-width: 880px) {
+/* Stack the side panels under the board once the three columns no longer fit
+   side by side: keys 230 + board 560 + history 230 + 2×28 gaps + 2×32 padding
+   ≈ 1180. Above this the row overflows a viewport that the desktop rule locks
+   with overflow:hidden, so the panels would be clipped rather than reflowed. */
+@media (max-width: 1180px) {
   .layout {
     flex-direction: column;
     align-items: center;
@@ -888,14 +894,35 @@ body {
   }
 }
 
-/* Desktop: lock the page; the board/controls stay fixed and only the history
-   list scrolls (cap the panel to the viewport, scroll its body). */
-@media (hover: hover) and (pointer: fine) {
+/* Narrow but mouse-driven (a resized desktop window): the keys panel is dropped
+   and the layout stacks (board, then history/stats) with the whole page
+   scrolling. The footer joins the normal flow at the very bottom of the page
+   instead of floating fixed over the board, so stack the body vertically and let
+   the game's auto margins centre it above the footer. */
+@media (hover: hover) and (pointer: fine) and (max-width: 1180px) {
+  body {
+    flex-direction: column;
+  }
+  .layout {
+    margin: auto 0; /* centre the game vertically; overflow spills below → scroll */
+  }
+  /* .keys stays hidden here (its base default) — only the wide block shows it */
+  .footer {
+    position: static;
+    align-self: stretch;
+  }
+}
+
+/* Wide desktop only: side-by-side layout — the keyboard-shortcuts list on the
+   left, a spacer balancing it on the right until the history panel appears
+   (keeping the board centered), and the page locked so the board/controls stay
+   fixed and only the history list scrolls. Below this the three columns no
+   longer fit, so the layout stacks (see the max-width blocks) and the whole page
+   scrolls instead — locking overflow there would clip the panels. */
+@media (hover: hover) and (pointer: fine) and (min-width: 1181px) {
   body {
     overflow: hidden;
   }
-  /* keyboard shortcuts list on the left; a spacer balances it on the right
-     until the history panel appears (keeping the board centered) */
   .layout:not(.tutorial) .keys {
     display: block;
   }
