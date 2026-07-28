@@ -4,7 +4,8 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22.12.0"
+# Même version que la CI et .nvmrc, pour un build identique
+  NODE_VERSION = "24.18.0"
 
 # Security hardening headers for the static site.
 # 'unsafe-inline' is required by Astro's inline theme script (no-flash) and
