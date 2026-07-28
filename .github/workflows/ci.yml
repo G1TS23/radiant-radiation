@@ -6,7 +6,8 @@ on:
   pull_request:
 
 env:
-  NODE_VERSION: "22.12.0"
+  # Garder aligné avec .nvmrc et netlify.toml
+  NODE_VERSION: "24.18.0"
 
 jobs:
   typecheck:
