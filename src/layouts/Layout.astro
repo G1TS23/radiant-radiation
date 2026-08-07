@@ -10,6 +10,19 @@ const description =
 const site = Astro.site ?? new URL("https://radiant-radiation.netlify.app");
 const ogImage = new URL("og.png", site).href;
 const canonical = new URL("/", site).href;
+
+// Name Google shows in place of the bare netlify.app subdomain in results.
+const siteName = "Radiant Radiation";
+
+// `WebSite` is what decides that name — og:site_name and <title> are only
+// secondary signals (developers.google.com/search/docs/appearance/site-names).
+// It must sit on the domain (or subdomain) root, which is the case here.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteName,
+  url: canonical,
+};
 ---
 
 <!doctype html>
@@ -28,7 +41,7 @@ const canonical = new URL("/", site).href;
 
     <!-- Open Graph (iMessage, WhatsApp, Discord, Facebook, LinkedIn…) -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="radiant-radiation" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -43,6 +56,9 @@ const canonical = new URL("/", site).href;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+
+    <!-- Structured data (schema.org/WebSite): site name in Google results -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
     <script is:inline>
       // Apply the saved/system theme before first paint to avoid a flash.
       (() => {
