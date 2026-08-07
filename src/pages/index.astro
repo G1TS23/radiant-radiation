@@ -5,7 +5,12 @@ import "../styles/terminal.css";
 const year = new Date().getFullYear();
 ---
 
-<Layout title="radiant-radiation">
+{
+  /* Search results show the site name and this title as two separate lines.
+    Repeating the bare project name there wasted the second one, so it says
+    what the site is — matching the wording already used in og:image:alt. */
+}
+<Layout title="radiant-radiation — a 2×2 flip puzzle">
   <div class="layout">
     <aside class="keys" aria-label="keyboard shortcuts">
       <p class="keys-head" data-i18n="keys.title">keys</p>
