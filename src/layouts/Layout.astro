@@ -62,7 +62,7 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
 
     <!-- Structured data (schema.org/WebSite): site name in Google results -->
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline></script>
     <script is:inline>
       // Apply the saved/system theme before first paint to avoid a flash.
       (() => {

@@ -5,24 +5,40 @@ import "../styles/terminal.css";
 const year = new Date().getFullYear();
 ---
 
-{
-  /* Search results show the site name and this title as two separate lines.
+{/* Search results show the site name and this title as two separate lines.
     Repeating the bare project name there wasted the second one, so it says
-    what the site is — matching the wording already used in og:image:alt. */
-}
+    what the site is — matching the wording already used in og:image:alt. */}
 <Layout title="radiant-radiation — a 2×2 flip puzzle">
   <div class="layout">
     <aside class="keys" aria-label="keyboard shortcuts">
-      <p class="keys-head" data-i18n="keys.title">keys</p>
+      <p class="keys-head" data-i18n="keys.title">
+        keys
+      </p>
       <ul>
-        <li><kbd>↑↓←→</kbd> <span data-i18n="action.move">move</span></li>
-        <li><kbd>space</kbd> <span data-i18n="action.flip">flip</span></li>
-        <li><kbd>z</kbd> <span data-i18n="action.undo">undo</span></li>
-        <li><kbd>r</kbd> <span data-i18n="action.reset">reset</span></li>
-        <li><kbd>n</kbd> <span data-i18n="action.new">new game</span></li>
-        <li><kbd>d</kbd> <span data-i18n="action.difficulty">difficulty</span></li>
-        <li><kbd>t</kbd> <span data-i18n="action.theme">theme</span></li>
-        <li><kbd>esc</kbd> <span data-i18n="action.zen">zen mode</span></li>
+        <li>
+          <kbd>↑↓←→</kbd> <span data-i18n="action.move">move</span>
+        </li>
+        <li>
+          <kbd>space</kbd> <span data-i18n="action.flip">flip</span>
+        </li>
+        <li>
+          <kbd>z</kbd> <span data-i18n="action.undo">undo</span>
+        </li>
+        <li>
+          <kbd>r</kbd> <span data-i18n="action.reset">reset</span>
+        </li>
+        <li>
+          <kbd>n</kbd> <span data-i18n="action.new">new game</span>
+        </li>
+        <li>
+          <kbd>d</kbd> <span data-i18n="action.difficulty">difficulty</span>
+        </li>
+        <li>
+          <kbd>t</kbd> <span data-i18n="action.theme">theme</span>
+        </li>
+        <li>
+          <kbd>esc</kbd> <span data-i18n="action.zen">zen mode</span>
+        </li>
       </ul>
     </aside>
     <main id="game" class="cli" aria-label="radiant-radiation puzzle"></main>
@@ -33,22 +49,37 @@ const year = new Date().getFullYear();
   <div id="lang-screen" class="lang-screen" role="dialog" aria-modal="true" hidden></div>
   <footer class="footer">
     <span>© {year} Olivier Falahi</span>
-    <span class="footer-sep" aria-hidden="true"> · </span>
-    <a href="mailto:olivier.falahi@gmail.com" data-i18n="footer.contact">contact</a>
-    <span class="footer-sep" aria-hidden="true"> · </span>
+    <span class="footer-sep" aria-hidden="true">
+      {" "}
+      ·{" "}
+    </span>
+    <a href="mailto:olivier.falahi@gmail.com" data-i18n="footer.contact">
+      contact
+    </a>
+    <span class="footer-sep" aria-hidden="true">
+      {" "}
+      ·{" "}
+    </span>
     <a
       href="https://github.com/G1TS23/radiant-radiation"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="source code on GitHub">github</a
+      aria-label="source code on GitHub"
     >
-    <span class="footer-sep" aria-hidden="true"> · </span>
+      github
+    </a>
+    <span class="footer-sep" aria-hidden="true">
+      {" "}
+      ·{" "}
+    </span>
     <a
       href="https://olivier.falahi.org"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="portfolio d'Olivier Falahi">portfolio</a
+      aria-label="portfolio d'Olivier Falahi"
     >
+      portfolio
+    </a>
   </footer>
 </Layout>
 
