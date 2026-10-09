@@ -108,6 +108,7 @@ Hors projet Node : `git config core.hooksPath .githooks` une fois après le clon
 ## Demande avant d'agir
 
 Demande une confirmation explicite avant de :
+
 - supprimer des fichiers ou des branches, ou toute action destructive (`rm -r`, `reset --hard`, `DROP`, `TRUNCATE`) ;
 - modifier la CI, les workflows, les migrations de base de données ou la config de déploiement ;
 - changer la version d'une dépendance majeure ou la version publiée du projet ;
@@ -116,6 +117,7 @@ Demande une confirmation explicite avant de :
 ## Sessions cloud et autonomes
 
 Sans supervision en direct, sois plus prudent, pas plus audacieux :
+
 - Travaille uniquement sur une branche dédiée, ouvre une PR, ne merge pas.
 - Ne modifie pas la CI ni les secrets pour « faire passer » un build : signale le problème dans la PR.
 - Si une tâche est ambiguë, choisis l'interprétation la plus conservatrice et note ton hypothèse dans la description de la PR.
