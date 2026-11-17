@@ -19,18 +19,18 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.4.7"
+    "astro": "^7.4.12"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "globals": "^17.14.0",
-    "jsdom": "^31.0.0",
-    "prettier": "^3.9.10",
+    "jsdom": "^31.0.1",
+    "prettier": "^3.10.1",
     "prettier-plugin-astro": "^1.1.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1",
+    "typescript-eslint": "^8.72.2",
     "vitest": "^5.1.0"
   }
 }
